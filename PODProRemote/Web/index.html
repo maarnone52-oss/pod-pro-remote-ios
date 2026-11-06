@@ -404,8 +404,7 @@ $("psave").onclick=()=>{
 $("pname").addEventListener("keydown",e=>{if(e.key==="Enter")$("psave").click()});
 $("pexport").onclick=()=>{
   const blob=new Blob([JSON.stringify(mine,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pod-pro-preset.json";
-  document.body.appendChild(a);a.click();a.remove();log("Scegli dove salvare il file dei preset.");
+  saveFile(blob,"pod-pro-preset.json");log("Scegli dove salvare il file dei preset.");
 };
 $("pimport").onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();
@@ -513,8 +512,7 @@ $("backup").onclick=async()=>{
   try{
     const d=await wait;
     const name="pod-pro-backup-"+new Date().toISOString().slice(0,10)+".syx";
-    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([d],{type:"application/octet-stream"}));a.download=name;
-    document.body.appendChild(a);a.click();a.remove();
+    saveFile(new Blob([d],{type:"application/octet-stream"}),name);
     log("Backup ricevuto ("+d.length+" byte): scegli dove salvare "+name+".");
   }catch(err){log(NOREPLY)}
 };
@@ -541,6 +539,20 @@ $("restoreFile").onchange=e=>{
   rd.readAsArrayBuffer(f);
 };
 
+// Salvataggio file: nell'app iOS ci pensa l'app; in un browser per iPhone/iPad
+// (es. Web MIDI Browser) si usa il pannello Condividi > "Salva in File", se disponibile.
+function saveFile(blob,name){
+  const link=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
+    document.body.appendChild(a);a.click();a.remove()};
+  if(!window.podNative&&navigator.canShare){
+    try{const f=new File([blob],name,{type:blob.type||"application/octet-stream"});
+      if(navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(e=>{if(!e||e.name!=="AbortError")link()});return}
+    }catch(e){}
+  }
+  link();
+}
+if(!window.podNative)document.querySelectorAll(".hint").forEach(h=>{
+  h.textContent=h.textContent.replace(" Per un adattatore MIDI Bluetooth usa il pulsante Bluetooth in alto."," Un adattatore MIDI Bluetooth va prima abbinato con un'app apposita (es. midimittr); poi compare tra le porte MIDI.")})
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
 if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
 // ---- Web MIDI ----

@@ -1,0 +1,37 @@
+# Pubblica il pannello come pagina web (GitHub Pages), da aprire con Web MIDI Browser su iPhone e iPad.
+name: Pagina web
+
+on:
+  push:
+    branches: [main]
+    paths: ["PODProRemote/Web/**", ".github/workflows/pagina.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepara la pagina
+        run: |
+          mkdir -p _site
+          cp -r PODProRemote/Web/. _site/
+          rm -f _site/midi-shim.js
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

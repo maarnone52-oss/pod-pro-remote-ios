@@ -1,0 +1,19 @@
+POD Pro Remote su iPhone e iPad con Web MIDI Browser (gratis, senza account Apple a pagamento)
+
+Il pannello è pubblicato come pagina web:
+   https://maarnone52-oss.github.io/pod-pro-remote-ios/
+
+INSTALLAZIONE
+1. Dall'App Store installa "Web MIDI Browser" (gratuita) sull'iPhone e/o sull'iPad.
+2. Collega l'interfaccia MIDI al POD e al dispositivo:
+   iPhone con USB-C: interfaccia MIDI USB direttamente nella porta
+   iPad Pro Lightning: adattatore Apple "da Lightning a USB 3 per fotocamere"
+   Bluetooth: abbina prima l'adattatore con l'app gratuita "midimittr"
+3. Apri Web MIDI Browser, scrivi l'indirizzo qui sopra e aggiungilo ai preferiti.
+4. In alto nel pannello scegli "MIDI Out", "MIDI In" e il canale del POD.
+
+NOTE
+- I preset salvati restano nel browser di quel dispositivo: usa "Esporta su file"
+  ogni tanto per averne una copia.
+- Ogni modifica al pannello caricata su GitHub aggiorna la pagina da sola
+  in circa un minuto.
