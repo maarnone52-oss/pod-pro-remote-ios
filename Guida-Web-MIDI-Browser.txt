@@ -28,3 +28,8 @@ dal MIDI OUT del POD al MIDI IN dell'interfaccia):
 Per reimparare il comando: tieni premuto Tuner per circa un secondo.
 Il comando imparato resta salvato su quel dispositivo (iPhone e iPad lo
 imparano ciascuno per conto proprio).
+
+SUONI PRONTI
+Nella pagina Preset trovi "Comfortably Numb – Solo" e una variante più morbida.
+Carica invia il suono al POD; Copia nei miei lo aggiunge ai tuoi preset,
+così puoi modificarlo e sovrascriverlo.

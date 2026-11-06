@@ -336,6 +336,11 @@ input[type=text],select{font-size:16px}
 
   <div class="desk">
     <section class="card" data-page="preset">
+      <h2>Suoni pronti</h2>
+      <div class="mylist" id="factory" style="margin-top:0"></div>
+      <p class="hint">Carica invia il suono al POD. Poi regolalo a orecchio e, se ti piace, salvalo con Save nella memoria del POD o in I miei preset.</p>
+    </section>
+    <section class="card" data-page="preset">
       <h2>I miei preset</h2>
       <div class="row">
         <input type="text" id="pname" placeholder="Nome, es. Assolo con delay" maxlength="40">
@@ -708,6 +713,40 @@ function saveFile(blob,name){
 }
 if(!window.podNative)document.querySelectorAll(".hint").forEach(h=>{
   h.textContent=h.textContent.replace(" Per un adattatore MIDI Bluetooth usa il pulsante Bluetooth in alto."," Un adattatore MIDI Bluetooth va prima abbinato con un'app apposita (es. midimittr); poi compare tra le porte MIDI.")});
+// ---- Suoni pronti ----
+// Valori CC 0–127. Delay tempo: 0–127 = 0–3150 ms (18 ≈ 450 ms).
+const FACTORY=[
+  {name:"Comfortably Numb – Solo",info:"Fuzz, 4x12, compressore, delay 450 ms, riverbero ampio",values:{
+    12:15, 71:12, 19:7,                                   // Fuzz Box, 4x12 '78 Marshall 70s, Delay/Comp
+    13:100,14:58,15:82,16:72,21:56,17:96,72:52,           // drive, bassi, medi, alti, presence, volume, A.I.R.
+    7:127,4:64,                                           // pedali
+    34:34,32:36,30:18, 51:30,52:70,                       // delay livello, ripetizioni, tempo · compressore
+    18:44,38:76,39:58,                                    // riverbero, decay, tono
+    25:127,26:127,27:127,73:0,22:127,43:0,50:127,28:127,36:127 // interruttori
+  }},
+  {name:"Comfortably Numb – Solo (più morbido)",info:"Stessa catena con Brit Hi Gain al posto del fuzz",values:{
+    12:12, 71:12, 19:7,
+    13:88,14:56,15:84,16:68,21:52,17:96,72:52,
+    7:127,4:64,
+    34:34,32:36,30:18, 51:30,52:70,
+    18:44,38:76,39:58,
+    25:127,26:127,27:127,73:0,22:127,43:0,50:127,28:127,36:127
+  }}
+];
+FACTORY.forEach(p=>{
+  const it=document.createElement("div");it.className="item";
+  const nm=document.createElement("span");nm.className="nm";nm.textContent=p.name;
+  const dt=document.createElement("span");dt.className="dt";dt.style.flexBasis="100%";dt.style.order="3";dt.textContent=p.info;
+  const ld=document.createElement("button");ld.className="rb red";ld.textContent="Carica";
+  ld.onclick=()=>{applySnapshot(p.values);log("— Suono pronto \""+p.name+"\" —");sendAllNow()};
+  const cp=document.createElement("button");cp.className="rb";cp.textContent="Copia nei miei";
+  cp.onclick=()=>{
+    const ex=mine.find(q=>q.name===p.name),values={...p.values};
+    if(ex){ex.values=values;ex.date=Date.now()}else mine.push({name:p.name,date:Date.now(),values});
+    if(writeStore(mine))log("Copiato in I miei preset: \""+p.name+"\"");renderList();
+  };
+  it.append(nm,ld,cp,dt);$("factory").appendChild(it);
+});
 // ---- Vista: compatta e tema "Rosso POD" (scelte ricordate su questo dispositivo) ----
 (function(){
   const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
