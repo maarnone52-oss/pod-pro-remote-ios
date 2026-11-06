@@ -578,10 +578,19 @@ function pickIn(){
 $("out").onchange=pickOut;$("in").onchange=pickIn;
 function startMidi(m){midi=m;m.onstatechange=fillPorts;fillPorts();log("MIDI pronto"+(sysexOK?" (SysEx attivo).":"."))}
 function midiFail(){setStatus("demo","MIDI non disponibile");log("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI.")}
-if(navigator.requestMIDIAccess){
+// Alcuni browser per iPhone/iPad (es. Web MIDI Browser) aggiungono il MIDI alla pagina
+// qualche istante dopo l'apertura: si aspetta fino a 10 secondi prima di arrendersi.
+function initMidi(){
   navigator.requestMIDIAccess({sysex:true}).then(m=>{sysexOK=true;startMidi(m)})
   .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log("SysEx non consentito: Save e Backup non funzioneranno.")}).catch(midiFail));
-}else{setStatus("demo","MIDI non disponibile");log("Il MIDI non è disponibile in questa installazione.")}
+}
+(function waitMidi(tries){
+  if(navigator.requestMIDIAccess)return initMidi();
+  if(tries===0)setStatus("demo","Attendo il MIDI…");
+  if(tries<50)return setTimeout(()=>waitMidi(tries+1),200);
+  setStatus("demo","MIDI non disponibile");
+  log("Il MIDI non è disponibile: su iPhone e iPad apri questa pagina con l'app Web MIDI Browser (Safari non supporta il MIDI).");
+})(0);
 </script>
 </body>
 </html>
