@@ -220,6 +220,20 @@ body.compatta .pagine{gap:4px}
 body[data-pagina="tutto"] .pghint{display:none}
 body.compatta .pagine .rb,.pagine .rb{letter-spacing:.02em;text-overflow:clip}
 body.compatta .pagine .rb{font-size:10.5px;padding-inline:0}
+
+/* ---- Amplificatore: le 7 manopole sempre su una sola riga ---- */
+#ampKnobs,body.compatta #ampKnobs{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px 2px}
+@media (max-width:860px){#pedalKnobs,body.compatta #pedalKnobs{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px 2px}}
+@media (max-width:700px){
+  #ampKnobs .knwrap,#ampKnobs .kn,#pedalKnobs .knwrap,#pedalKnobs .kn{width:46px;height:46px}
+  #ampKnobs .kn,#pedalKnobs .kn{-webkit-mask:radial-gradient(circle,transparent 0 19.5px,#000 20px 22.5px,transparent 23px);
+    mask:radial-gradient(circle,transparent 0 19.5px,#000 20px 22.5px,transparent 23px)}
+  #ampKnobs .body,#pedalKnobs .body{width:35px;height:35px}
+  #ampKnobs .cap,#pedalKnobs .cap{inset:6px}
+  #ampKnobs .ptr::before,#pedalKnobs .ptr::before{top:2px;width:2px;height:8px;margin-left:-1px}
+  #ampKnobs .knob label,#pedalKnobs .knob label{font-size:9.5px;letter-spacing:.02em}
+  #ampKnobs .knob output,#pedalKnobs .knob output{font-size:10px}
+}
 @media (prefers-reduced-motion:reduce){.rb:active{transform:none}}
 /* iPhone / iPad */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
