@@ -216,6 +216,8 @@ body.compatta .hint{font-size:11px}
 body:not([data-pagina="tutto"]) [data-page]:not(.vis){display:none}
 body:not([data-pagina="tutto"]) .desk{grid-template-columns:minmax(0,1fr)}
 body.compatta .pagine{gap:4px}
+.pghint{margin:-6px 0 0;font-size:9px;letter-spacing:.1em;text-transform:none}
+body[data-pagina="tutto"] .pghint{display:none}
 body.compatta .pagine .rb,.pagine .rb{letter-spacing:.02em;text-overflow:clip}
 body.compatta .pagine .rb{font-size:10.5px;padding-inline:0}
 @media (prefers-reduced-motion:reduce){.rb:active{transform:none}}
@@ -255,6 +257,7 @@ input[type=text],select{font-size:16px}
       <nav class="pagine" aria-label="Pagine">
         <button class="rb" data-go="amp">Amp</button><button class="rb" data-go="fx">Effetti</button><button class="rb" data-go="canali">Canali</button><button class="rb" data-go="preset">Preset</button><button class="rb" data-go="log">Messaggi</button><button class="rb" data-go="tutto">Tutto</button>
       </nav>
+      <p class="pghint eng">Tocca due pulsanti per vedere due pagine insieme · tocca di nuovo per chiudere</p>
       <div class="divider" data-page="amp"></div>
       <div class="cols2" data-page="amp">
         <div class="grp"><span class="eng">Amplificatore</span><div class="knobs" id="ampKnobs"></div></div>
@@ -644,18 +647,29 @@ if(!window.podNative)document.querySelectorAll(".hint").forEach(h=>{
   $("vCompatta").onclick=()=>{const on=!document.body.classList.contains("compatta");apply("compatta","vCompatta",on);put("podVistaCompatta",on?"1":"0")};
   $("vTema").onclick=()=>{const on=!document.body.classList.contains("rosso");apply("rosso","vTema",on);put("podVistaRosso",on?"1":"0")};
 })();
-// ---- Pagine (la scelta viene ricordata su questo dispositivo) ----
+// ---- Pagine: una o due insieme (la scelta viene ricordata su questo dispositivo) ----
+// Tocca un pulsante per aggiungere quella pagina (al massimo due: la più vecchia lascia il posto);
+// tocca di nuovo una pagina già aperta per toglierla. "Tutto" mostra ogni sezione.
 (function(){
-  let pg=null;try{pg=localStorage.getItem("podPagina")}catch(e){}
-  if(!pg)pg=Math.min(screen.width,screen.height)<600?"amp":"tutto";
-  function go(name){
-    document.body.dataset.pagina=name;
-    document.querySelectorAll("[data-page]").forEach(el=>el.classList.toggle("vis",el.dataset.page===name));
-    document.querySelectorAll("[data-go]").forEach(b=>{const on=b.dataset.go===name;b.classList.toggle("red",on);b.setAttribute("aria-pressed",on)});
-    try{localStorage.setItem("podPagina",name)}catch(e){}
+  const names=[...document.querySelectorAll("[data-go]")].map(b=>b.dataset.go).filter(n=>n!=="tutto");
+  let sel=[];try{sel=(localStorage.getItem("podPagina")||"").split(",").filter(n=>n==="tutto"||names.includes(n))}catch(e){}
+  if(!sel.length)sel=[Math.min(screen.width,screen.height)<600?"amp":"tutto"];
+  function show(){
+    const all=sel.includes("tutto");
+    document.body.dataset.pagina=all?"tutto":sel.join(",");
+    document.querySelectorAll("[data-page]").forEach(el=>el.classList.toggle("vis",sel.includes(el.dataset.page)));
+    document.querySelectorAll("[data-go]").forEach(b=>{const on=sel.includes(b.dataset.go);b.classList.toggle("red",on);b.setAttribute("aria-pressed",on)});
+    try{localStorage.setItem("podPagina",sel.join(","))}catch(e){}
   }
-  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{go(b.dataset.go);window.scrollTo({top:0})});
-  go(document.querySelector('[data-go="'+pg+'"]')?pg:"tutto");
+  function tap(n){
+    if(n==="tutto")sel=["tutto"];
+    else if(sel.includes("tutto"))sel=[n];
+    else if(sel.includes(n)){if(sel.length>1)sel=sel.filter(x=>x!==n)}
+    else{sel.push(n);if(sel.length>2)sel.shift()}
+    show();
+  }
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tap(b.dataset.go);window.scrollTo({top:0})});
+  show();
 })();
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
 if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
