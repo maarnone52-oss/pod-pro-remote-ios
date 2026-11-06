@@ -17,3 +17,14 @@ NOTE
   ogni tanto per averne una copia.
 - Ogni modifica al pannello caricata su GitHub aggiorna la pagina da sola
   in circa un minuto.
+
+TUNER
+Il tasto Tuner, accanto a Manual, accende e spegne l'accordatore del POD.
+La prima volta il pannello deve imparare il comando dal POD (serve il cavo
+dal MIDI OUT del POD al MIDI IN dell'interfaccia):
+1. Tocca Tuner nel pannello: diventa "Premi Tuner sul POD…".
+2. Premi Tuner sul POD per accenderlo, poi premilo di nuovo per spegnerlo.
+3. Da quel momento il tasto Tuner del pannello comanda l'accordatore.
+Per reimparare il comando: tieni premuto Tuner per circa un secondo.
+Il comando imparato resta salvato su quel dispositivo (iPhone e iPad lo
+imparano ciascuno per conto proprio).

@@ -236,6 +236,8 @@ body.compatta .pagine .rb{font-size:10.5px;padding-inline:0}
 }
 
 /* ---- Finestra principale fissa in alto ---- */
+.lcdbox{flex-wrap:wrap}
+#tuner{max-width:100%;white-space:normal}
 .unit.head{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;box-shadow:0 10px 24px rgba(0,0,0,.7),0 2px 0 rgba(255,255,255,.06) inset}
 body.compatta .brand small,body.compatta .pghint{display:none}
 body.compatta .unit.head .face{gap:6px;padding-block:7px}
@@ -260,6 +262,7 @@ input[type=text],select{font-size:16px}
           <div class="lcd" aria-live="polite"><span id="lcd">1A</span><small id="lcdname">—</small></div>
           <button class="rb" id="next" aria-label="Preset successivo">▶</button>
           <button class="rb" id="manual">Manual</button>
+          <button class="rb" id="tuner" aria-pressed="false" title="Accende e spegne l'accordatore del POD. Tieni premuto per reimparare il comando">Tuner</button>
         </div>
         <div class="conn">
           <label for="out">MIDI Out</label>
@@ -464,6 +467,49 @@ MODELS.forEach(m=>{
 });
 
 $("tap").onclick=()=>cc(64,127,"tap tempo");
+
+// ---- Accordatore: l'app impara dal POD il comando che il tasto Tuner invia (come nella versione per Mac 1.3) ----
+const TKEY="podProRemote.tuner";
+let tunerOn=false,tunerCmd=null,learn=null;
+try{tunerCmd=JSON.parse(localStorage.getItem(TKEY))}catch(e){}
+const hexs=a=>a.map(b=>b.toString(16).padStart(2,"0").toUpperCase()).join(" ");
+function setTuner(on){tunerOn=on;$("tuner").classList.toggle("red",on);$("tuner").setAttribute("aria-pressed",on);$("tuner").textContent=on?"Tuner ON":"Tuner"}
+function learnEnd(){
+  const l=learn;learn=null;clearTimeout(l.t);
+  if(!l.on){$("tuner").textContent="Tuner";
+    log("Il POD non ha inviato nessun comando quando hai premuto Tuner. Probabilmente il POD Pro non permette di comandare l'accordatore via MIDI.");return}
+  tunerCmd={on:l.on,off:l.off||l.on};
+  try{localStorage.setItem(TKEY,JSON.stringify(tunerCmd))}catch(e){}
+  log("Comando del Tuner imparato. Acceso: "+hexs(tunerCmd.on)+" · Spento: "+hexs(tunerCmd.off));
+  log("Ora il tasto Tuner dell'app accende e spegne l'accordatore.");setTuner(false);
+}
+function learnCapture(d){
+  if(!learn)return false;
+  if(d[0]>=0xF8)return true;                       // ignora clock e active sensing
+  const m=Array.from(d);log("← dal POD: "+hexs(m));
+  if(!learn.on){learn.on=m;$("tuner").textContent="Ora premi di nuovo Tuner sul POD…";
+    clearTimeout(learn.t);learn.t=setTimeout(learnEnd,10000);return true}
+  learn.off=m;learnEnd();return true;
+}
+function learnStart(){
+  if(!inp){log("Per imparare il comando del Tuner serve MIDI In collegato (cavo dal MIDI OUT del POD all'interfaccia).");return}
+  learn={on:null,off:null,t:setTimeout(learnEnd,15000)};
+  $("tuner").textContent="Premi Tuner sul POD…";
+  log("— Impara Tuner — Premi il tasto Tuner sul POD per accendere l'accordatore, poi premilo di nuovo per spegnerlo.");
+}
+// Su iPhone e iPad: tieni premuto Tuner per circa un secondo per reimparare il comando (sul Mac: Maiusc+clic)
+let tHold=null,tHeld=false;
+$("tuner").addEventListener("pointerdown",()=>{tHeld=false;clearTimeout(tHold);tHold=setTimeout(()=>{tHeld=true;if(!learn)learnStart()},900)});
+["pointerup","pointerleave","pointercancel"].forEach(ev=>$("tuner").addEventListener(ev,()=>clearTimeout(tHold)));
+$("tuner").addEventListener("contextmenu",e=>e.preventDefault());
+$("tuner").onclick=e=>{
+  if(tHeld){tHeld=false;return}
+  if(learn){learnEnd();return}
+  if(!tunerCmd||e.shiftKey){learnStart();return}
+  setTuner(!tunerOn);const m=tunerOn?tunerCmd.on:tunerCmd.off;
+  if(out){try{out.send(m)}catch(err){log("Errore invio: "+err.message);return}}
+  log((out?"":"[prova] ")+("Tuner "+(tunerOn?"ON":"OFF")).padEnd(30)+hexs(m));
+};
 function sendAllNow(){
   [...MODELS,...KNOBS].forEach(k=>cc(k.cc,state[k.cc],k.name));
   TOGGLES.forEach(t=>cc(t.cc,state[t.cc],t.name));
@@ -540,6 +586,7 @@ function waitFor(op,ms){
 }
 function onMsg(e){
   const d=e.data,st=d[0]&0xF0;
+  if(learnCapture(d))return;
   // cambio canale fatto sul POD: aggiorna display e manopole
   if(st===0xC0&&(d[0]&0x0F)===ch()){const n=d[1];current=n;markPreset(n);if(n>0)$("slot").value=n;scheduleRead();return}
   // manopola girata sul POD: aggiorna il comando corrispondente
