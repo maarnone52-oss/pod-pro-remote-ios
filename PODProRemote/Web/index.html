@@ -234,6 +234,11 @@ body.compatta .pagine .rb{font-size:10.5px;padding-inline:0}
   #ampKnobs .knob label,#pedalKnobs .knob label{font-size:9.5px;letter-spacing:.02em}
   #ampKnobs .knob output,#pedalKnobs .knob output{font-size:10px}
 }
+
+/* ---- Finestra principale fissa in alto ---- */
+.unit.head{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;box-shadow:0 10px 24px rgba(0,0,0,.7),0 2px 0 rgba(255,255,255,.06) inset}
+body.compatta .brand small,body.compatta .pghint{display:none}
+body.compatta .unit.head .face{gap:6px;padding-block:7px}
 @media (prefers-reduced-motion:reduce){.rb:active{transform:none}}
 /* iPhone / iPad */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -244,8 +249,8 @@ input[type=text],select{font-size:16px}
 <body>
 <div class="wrap">
 
-  <!-- Unità 1: testa, display, collegamento, amplificatore -->
-  <div class="unit">
+  <!-- Unità 1: testa, display, collegamento e menu pagine (resta sempre fissa in alto) -->
+  <div class="unit head">
     <div class="ear"><span class="screw"></span><span class="screw"></span></div>
     <div class="face">
       <div class="top">
@@ -272,8 +277,15 @@ input[type=text],select{font-size:16px}
         <button class="rb" data-go="amp">Amp</button><button class="rb" data-go="fx">Effetti</button><button class="rb" data-go="canali">Canali</button><button class="rb" data-go="preset">Preset</button><button class="rb" data-go="log">Messaggi</button><button class="rb" data-go="tutto">Tutto</button>
       </nav>
       <p class="pghint eng">Tocca due pulsanti per vedere due pagine insieme · tocca di nuovo per chiudere</p>
-      <div class="divider" data-page="amp"></div>
-      <div class="cols2" data-page="amp">
+    </div>
+    <div class="ear r"><span class="screw"></span><span class="screw"></span></div>
+  </div>
+
+  <!-- Amplificatore e pedali -->
+  <div class="unit" data-page="amp">
+    <div class="ear"><span class="screw"></span><span class="screw"></span></div>
+    <div class="face">
+      <div class="cols2">
         <div class="grp"><span class="eng">Amplificatore</span><div class="knobs" id="ampKnobs"></div></div>
         <div class="grp"><span class="eng">Pedali</span><div class="knobs" id="pedalKnobs"></div></div>
       </div>
