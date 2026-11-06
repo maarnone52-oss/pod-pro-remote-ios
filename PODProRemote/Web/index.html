@@ -209,6 +209,15 @@ body.compatta .log{height:110px;font-size:11px}
 body.compatta .hint{font-size:11px}
 @media (max-width:560px){body.compatta .unit{grid-template-columns:minmax(0,1fr)}}
 .vista{display:flex;gap:6px}
+
+/* ---- Pagine: si vede una sezione alla volta (oppure "Tutto") ---- */
+.pagine{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.pagine .rb{padding-inline:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body:not([data-pagina="tutto"]) [data-page]:not(.vis){display:none}
+body:not([data-pagina="tutto"]) .desk{grid-template-columns:minmax(0,1fr)}
+body.compatta .pagine{gap:4px}
+body.compatta .pagine .rb,.pagine .rb{letter-spacing:.02em;text-overflow:clip}
+body.compatta .pagine .rb{font-size:10.5px;padding-inline:0}
 @media (prefers-reduced-motion:reduce){.rb:active{transform:none}}
 /* iPhone / iPad */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -243,8 +252,11 @@ input[type=text],select{font-size:16px}
           <div class="vista"><button class="rb" id="vCompatta" aria-pressed="false">Compatta</button><button class="rb" id="vTema" aria-pressed="false">Rosso</button></div>
         </div>
       </div>
-      <div class="divider"></div>
-      <div class="cols2">
+      <nav class="pagine" aria-label="Pagine">
+        <button class="rb" data-go="amp">Amp</button><button class="rb" data-go="fx">Effetti</button><button class="rb" data-go="canali">Canali</button><button class="rb" data-go="preset">Preset</button><button class="rb" data-go="log">Messaggi</button><button class="rb" data-go="tutto">Tutto</button>
+      </nav>
+      <div class="divider" data-page="amp"></div>
+      <div class="cols2" data-page="amp">
         <div class="grp"><span class="eng">Amplificatore</span><div class="knobs" id="ampKnobs"></div></div>
         <div class="grp"><span class="eng">Pedali</span><div class="knobs" id="pedalKnobs"></div></div>
       </div>
@@ -253,7 +265,7 @@ input[type=text],select{font-size:16px}
   </div>
 
   <!-- Unità 2: effetti -->
-  <div class="unit">
+  <div class="unit" data-page="fx">
     <div class="ear"><span class="screw"></span><span class="screw"></span></div>
     <div class="face">
       <div class="grp"><span class="eng">Effetti on / off</span><div class="toggles" id="toggles"></div></div>
@@ -271,7 +283,7 @@ input[type=text],select{font-size:16px}
   </div>
 
   <!-- Unità 3: memorie del POD -->
-  <div class="unit">
+  <div class="unit" data-page="canali">
     <div class="ear"><span class="screw"></span><span class="screw"></span></div>
     <div class="face">
       <div class="grp"><span class="eng">Canali del POD · Program Change 1–36</span><div class="presets" id="presets"></div></div>
@@ -291,7 +303,7 @@ input[type=text],select{font-size:16px}
   </div>
 
   <div class="desk">
-    <section class="card">
+    <section class="card" data-page="preset">
       <h2>I miei preset</h2>
       <div class="row">
         <input type="text" id="pname" placeholder="Nome, es. Assolo con delay" maxlength="40">
@@ -305,7 +317,7 @@ input[type=text],select{font-size:16px}
       <div class="mylist" id="plist"></div>
       <p class="hint">Carica invia subito tutte le impostazioni al POD. I preset restano salvati in questa app; con Esporta ne fai una copia in File o iCloud.</p>
     </section>
-    <section class="card">
+    <section class="card" data-page="log">
       <h2>Messaggi inviati</h2>
       <div class="log" id="log" aria-live="polite"></div>
       <p class="hint">Manopole: trascina col dito in su o in giù. Senza uscita MIDI l'app lavora in modalità prova. Per un adattatore MIDI Bluetooth usa il pulsante Bluetooth in alto.</p>
@@ -631,6 +643,19 @@ if(!window.podNative)document.querySelectorAll(".hint").forEach(h=>{
   apply("rosso","vTema",rosso==="1");
   $("vCompatta").onclick=()=>{const on=!document.body.classList.contains("compatta");apply("compatta","vCompatta",on);put("podVistaCompatta",on?"1":"0")};
   $("vTema").onclick=()=>{const on=!document.body.classList.contains("rosso");apply("rosso","vTema",on);put("podVistaRosso",on?"1":"0")};
+})();
+// ---- Pagine (la scelta viene ricordata su questo dispositivo) ----
+(function(){
+  let pg=null;try{pg=localStorage.getItem("podPagina")}catch(e){}
+  if(!pg)pg=Math.min(screen.width,screen.height)<600?"amp":"tutto";
+  function go(name){
+    document.body.dataset.pagina=name;
+    document.querySelectorAll("[data-page]").forEach(el=>el.classList.toggle("vis",el.dataset.page===name));
+    document.querySelectorAll("[data-go]").forEach(b=>{const on=b.dataset.go===name;b.classList.toggle("red",on);b.setAttribute("aria-pressed",on)});
+    try{localStorage.setItem("podPagina",name)}catch(e){}
+  }
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{go(b.dataset.go);window.scrollTo({top:0})});
+  go(document.querySelector('[data-go="'+pg+'"]')?pg:"tutto");
 })();
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
 if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
