@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POD Pro Remote</title>
+<style>
+@font-face{font-family:"Barlow";src:url(fonts/Barlow-Regular.ttf);font-weight:400}
+@font-face{font-family:"Barlow";src:url(fonts/Barlow-SemiBold.ttf);font-weight:600}
+@font-face{font-family:"Barlow Condensed";src:url(fonts/BarlowCondensed-Medium.ttf);font-weight:500}
+@font-face{font-family:"Barlow Condensed";src:url(fonts/BarlowCondensed-SemiBold.ttf);font-weight:600}
+@font-face{font-family:"Barlow Condensed";src:url(fonts/BarlowCondensed-Bold.ttf);font-weight:700}
+@font-face{font-family:"Share Tech Mono";src:url(fonts/ShareTechMono-Regular.ttf);font-weight:400}
+</style>
+<style>
+/* Layout: rack da studio — tre unità in alluminio spazzolato con orecchie e viti, sotto il banco con preset e registro */
+:root{
+  --studio:#1d1e21; --studio2:#26282c; --line:#3a3c41;
+  --fg:#eceae6; --muted:#a3a19c;
+  --metal-hi:#e4e5e7; --metal-lo:#b8babe; --engrave:#26282c; --engrave-soft:#55585e;
+  --red:#d9342b; --led:#ff3b2f; --lcd:#170a0a; --lcd-text:#ff5240;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow",system-ui,sans-serif;
+  --mono:"Share Tech Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0,#2b2d32,var(--studio) 70%) fixed,var(--studio);color:var(--fg);font:15px/1.5 var(--body);
+  padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:14px}
+
+/* ---- Unità rack ---- */
+.unit{position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) 34px;border-radius:3px;
+  box-shadow:0 10px 24px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.06) inset}
+.ear{background:linear-gradient(90deg,#9ea1a6,#c9cbcf 40%,#a7aaaf);display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding-block:14px;border-radius:3px 0 0 3px}
+.ear.r{border-radius:0 3px 3px 0}
+.screw{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f4f4f5,#8d9095 70%,#5d6065);box-shadow:0 1px 1px rgba(0,0,0,.5);position:relative}
+.screw::after{content:"";position:absolute;left:2px;right:2px;top:6px;height:2px;background:#4a4d52;transform:rotate(-30deg)}
+.face{color:var(--engrave);padding:16px 20px;display:grid;gap:14px;min-width:0;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,rgba(0,0,0,.035) 1px 2px),linear-gradient(180deg,var(--metal-hi),var(--metal-lo));
+  box-shadow:inset 0 1px 0 #fff,inset 0 -2px 3px rgba(0,0,0,.18)}
+.eng{font:700 12px var(--display);letter-spacing:.18em;text-transform:uppercase;color:var(--engrave-soft);text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between}
+.brand{font:700 26px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.brand small{display:block;font:600 11px var(--display);letter-spacing:.3em;color:var(--engrave-soft);margin-top:4px}
+.brand b{color:var(--red)}
+
+/* Display LCD */
+.lcdbox{display:flex;align-items:center;gap:8px}
+.lcd{background:linear-gradient(180deg,#0d0505,var(--lcd));border-radius:4px;padding:6px 14px;min-width:96px;text-align:center;
+  box-shadow:inset 0 3px 6px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.7);font:400 34px/1.1 var(--mono);color:var(--lcd-text);text-shadow:0 0 8px rgba(255,70,50,.75)}
+.lcd span{display:block}
+.lcd small{display:block;font:400 12px/1.3 var(--mono);letter-spacing:.04em;min-width:9em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:12em}
+.conn{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.conn label{font:700 11px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--engrave-soft)}
+select{font:15px var(--mono);color:var(--lcd-text);background:var(--lcd);border:0;border-radius:4px;padding:7px 10px;max-width:100%;box-shadow:inset 0 2px 4px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.7)}
+select option{color:#fff;background:#222}
+.status{display:flex;align-items:center;gap:8px;font:600 12px var(--body);color:var(--engrave)}
+
+/* Pulsanti in gomma */
+.rb{font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#e9e9ea;cursor:pointer;
+  background:linear-gradient(180deg,#4a4c51,#2c2e32);border:0;border-radius:5px;padding:9px 14px;
+  box-shadow:0 2px 0 #15161a,0 3px 5px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+.rb:active{transform:translateY(2px);box-shadow:0 0 0 #15161a,inset 0 1px 0 rgba(255,255,255,.1)}
+.rb.red{background:linear-gradient(180deg,#e8483e,#b0241d);box-shadow:0 2px 0 #6e140f,0 3px 5px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)}
+.rb.sm{padding:6px 0;font-size:13px}
+
+/* LED */
+.led{width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#7a3530,#3b1513);box-shadow:inset 0 1px 2px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.7)}
+.on .led,.led.on{background:radial-gradient(circle at 35% 35%,#ffd1c8,var(--led) 45%,#b81e15);box-shadow:0 0 10px 2px rgba(255,60,40,.7),0 1px 0 rgba(255,255,255,.7)}
+.dot.on{background:radial-gradient(circle at 35% 35%,#d8ffe4,#38d36a 45%,#1e8a43);box-shadow:0 0 10px 2px rgba(60,220,110,.6)}
+.dot.demo{background:radial-gradient(circle at 35% 35%,#ffefc8,#f0a826 45%,#a86c0c);box-shadow:0 0 8px 2px rgba(240,170,40,.5)}
+
+/* Preset */
+.presets{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:6px}
+.pbtn.sel{background:linear-gradient(180deg,#e8483e,#b0241d);box-shadow:0 0 10px rgba(255,60,40,.45),inset 0 1px 0 rgba(255,255,255,.3)}
+
+/* Interruttori effetti */
+.toggles{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:10px}
+.tg{display:grid;justify-items:center;gap:7px;background:none;border:0;padding:0;cursor:pointer;font:inherit}
+.tg .rb{width:100%;padding:10px 4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Manopole */
+.knobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:14px 8px}
+.knob{position:relative;display:grid;justify-items:center;gap:2px}
+.kn{--a:0deg;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;cursor:ns-resize;touch-action:none;
+  background:conic-gradient(from 225deg,var(--red) 0 var(--a),#9b9da2 var(--a) 270deg,transparent 270deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 31px,#000 31.5px 36px,transparent 36.5px);
+  mask:radial-gradient(circle,transparent 0 31px,#000 31.5px 36px,transparent 36.5px)}
+.knwrap{position:relative;width:74px;height:74px;display:grid;place-items:center}
+.knwrap .kn{position:absolute;inset:0}
+.body{position:relative;width:56px;height:56px;border-radius:50%;cursor:ns-resize;touch-action:none;
+  background:radial-gradient(circle at 38% 30%,#5a5c61,#1d1e21 55%,#0d0e10);
+  box-shadow:0 6px 10px rgba(0,0,0,.45),0 2px 3px rgba(0,0,0,.4),inset 0 -2px 3px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.25)}
+.cap{position:absolute;inset:11px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#ffffff,#cfd1d4 35%,#8d9095 80%);
+  box-shadow:inset 0 -1px 2px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.5)}
+.ptr{position:absolute;inset:0;transform:rotate(var(--r,0deg))}
+.ptr::before{content:"";position:absolute;left:50%;top:3px;width:3px;height:13px;margin-left:-1.5px;border-radius:2px;background:#f4f4f4;box-shadow:0 0 2px rgba(0,0,0,.6)}
+.knob label{font:700 12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--engrave);text-shadow:0 1px 0 rgba(255,255,255,.7);text-align:center;line-height:1.15}
+.knob output{font:12px var(--mono);color:var(--engrave-soft)}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.knob:focus-within .body{outline:2px solid var(--red);outline-offset:3px}
+.grp{display:grid;gap:10px}
+.cols2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,2fr);gap:22px;align-items:start}
+#ampKnobs{grid-template-columns:repeat(7,minmax(0,1fr))}
+#pedalKnobs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.knob{align-content:start}
+.divider{height:2px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.18),transparent);box-shadow:0 1px 0 rgba(255,255,255,.6)}
+
+/* Modelli */
+.models{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.models label{display:grid;gap:5px;font:700 11px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--engrave-soft)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.saverow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.saverow .sep{flex:1 1 20px}
+
+/* Banco sotto il rack */
+.desk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.card{background:var(--studio2);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+h2{font:700 13px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=text]{flex:1 1 200px;min-width:0;background:var(--studio);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;font:inherit}
+.mylist{display:grid;gap:6px;margin-top:12px}
+.item{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--studio);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.item .nm{flex:1 1 140px;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.item .dt{font:12px var(--mono);color:var(--muted)}
+.empty{color:var(--muted);font-size:13px;margin:0}
+.log{font:12px/1.6 var(--mono);background:#121315;border:1px solid var(--line);border-radius:4px;padding:10px;height:170px;overflow:auto;color:var(--muted);white-space:pre-wrap}
+.hint{font-size:13px;color:var(--muted);max-width:70ch;margin:10px 0 0}
+button:focus-visible,select:focus-visible,input:focus-visible,label.rb:focus-within{outline:2px solid var(--led);outline-offset:2px}
+
+@media (max-width:860px){
+  .presets{grid-template-columns:repeat(9,minmax(0,1fr))}
+  .toggles{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .cols2,.models{grid-template-columns:minmax(0,1fr)}
+  #ampKnobs,#pedalKnobs{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+}
+@media (max-width:560px){
+  .unit{grid-template-columns:minmax(0,1fr)} .ear{display:none}
+  .face{padding:14px}
+  .toggles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .presets{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.rb:active{transform:none}}
+/* iPhone / iPad */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input[type=text],.log{-webkit-user-select:text;user-select:text}
+input[type=text],select{font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Unità 1: testa, display, collegamento, amplificatore -->
+  <div class="unit">
+    <div class="ear"><span class="screw"></span><span class="screw"></span></div>
+    <div class="face">
+      <div class="top">
+        <div class="brand">POD Pro <b>Remote</b><small>MIDI Control Unit · CH 1–16</small></div>
+        <div class="lcdbox">
+          <button class="rb" id="prev" aria-label="Preset precedente">◀</button>
+          <div class="lcd" aria-live="polite"><span id="lcd">1A</span><small id="lcdname">—</small></div>
+          <button class="rb" id="next" aria-label="Preset successivo">▶</button>
+          <button class="rb" id="manual">Manual</button>
+        </div>
+        <div class="conn">
+          <label for="out">MIDI Out</label>
+          <select id="out"><option value="">— nessuna —</option></select>
+          <label for="in">MIDI In</label>
+          <select id="in"><option value="">— nessuna —</option></select>
+          <label for="ch">Ch</label>
+          <select id="ch"></select>
+          <div class="status"><span class="led dot" id="dot"></span><span id="stat">Avvio…</span></div>
+          <button class="rb" id="bt" hidden>Bluetooth</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="cols2">
+        <div class="grp"><span class="eng">Amplificatore</span><div class="knobs" id="ampKnobs"></div></div>
+        <div class="grp"><span class="eng">Pedali</span><div class="knobs" id="pedalKnobs"></div></div>
+      </div>
+    </div>
+    <div class="ear r"><span class="screw"></span><span class="screw"></span></div>
+  </div>
+
+  <!-- Unità 2: effetti -->
+  <div class="unit">
+    <div class="ear"><span class="screw"></span><span class="screw"></span></div>
+    <div class="face">
+      <div class="grp"><span class="eng">Effetti on / off</span><div class="toggles" id="toggles"></div></div>
+      <div class="divider"></div>
+      <div class="grp"><span class="eng">Delay · Modulazione · Riverbero</span><div class="knobs" id="fxKnobs"></div></div>
+      <div class="divider"></div>
+      <div class="models" id="models"></div>
+      <div class="actions">
+        <button class="rb" id="readPod">Leggi dal POD</button>
+        <button class="rb" id="tap">Tap tempo</button>
+        <button class="rb red" id="sendAll">Invia tutto al POD</button>
+      </div>
+    </div>
+    <div class="ear r"><span class="screw"></span><span class="screw"></span></div>
+  </div>
+
+  <!-- Unità 3: memorie del POD -->
+  <div class="unit">
+    <div class="ear"><span class="screw"></span><span class="screw"></span></div>
+    <div class="face">
+      <div class="grp"><span class="eng">Canali del POD · Program Change 1–36</span><div class="presets" id="presets"></div></div>
+      <div class="divider"></div>
+      <div class="saverow">
+        <span class="eng">Memoria del POD</span>
+        <label class="eng" for="slot">Salva in</label>
+        <select id="slot"></select>
+        <button class="rb red" id="podsave">Save</button>
+        <span class="sep"></span>
+        <button class="rb" id="backup">Backup memoria POD</button>
+        <button class="rb" id="restore">Ripristina backup</button>
+        <input type="file" id="restoreFile" accept=".syx" hidden>
+      </div>
+    </div>
+    <div class="ear r"><span class="screw"></span><span class="screw"></span></div>
+  </div>
+
+  <div class="desk">
+    <section class="card">
+      <h2>I miei preset</h2>
+      <div class="row">
+        <input type="text" id="pname" placeholder="Nome, es. Assolo con delay" maxlength="40">
+        <button class="rb red" id="psave">Salva</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="rb" id="pexport">Esporta su file</button>
+        <label class="rb" for="pimport">Importa da file</label>
+        <input type="file" id="pimport" accept=".json,application/json" hidden>
+      </div>
+      <div class="mylist" id="plist"></div>
+      <p class="hint">Carica invia subito tutte le impostazioni al POD. I preset restano salvati in questa app; con Esporta ne fai una copia in File o iCloud.</p>
+    </section>
+    <section class="card">
+      <h2>Messaggi inviati</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+      <p class="hint">Manopole: trascina col dito in su o in giù. Senza uscita MIDI l'app lavora in modalità prova. Per un adattatore MIDI Bluetooth usa il pulsante Bluetooth in alto.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// ---- Mappa MIDI POD Pro / POD 2.0 (Line 6 MIDI CC Reference) ----
+const TOGGLES=[
+  {cc:25,name:"Drive"},{cc:26,name:"Vol Boost"},{cc:27,name:"Presence"},
+  {cc:73,name:"Bright"},{cc:22,name:"Gate"},{cc:43,name:"Wah"},
+  {cc:50,name:"Mod"},{cc:28,name:"Delay"},{cc:36,name:"Riverbero"}
+];
+const AMP=[
+  {cc:13,name:"Drive",v:64},{cc:14,name:"Bassi",v:64},{cc:15,name:"Medi",v:64},
+  {cc:16,name:"Alti",v:64},{cc:21,name:"Presence",v:64},{cc:17,name:"Volume",v:90},
+  {cc:72,name:"A.I.R.",v:40}
+];
+const PEDALS=[{cc:7,name:"Volume pedale",v:127},{cc:4,name:"Wah",v:64}];
+const FX=[
+  {cc:34,name:"Delay livello",v:40},{cc:32,name:"Ripetizioni",v:40},{cc:30,name:"Delay tempo",v:50},
+  {cc:51,name:"Mod velocità",v:40},{cc:52,name:"Mod profondità",v:60},
+  {cc:18,name:"Riverbero",v:40},{cc:38,name:"Decay",v:60},{cc:39,name:"Tono riverbero",v:64}
+];
+const KNOBS=[...AMP,...PEDALS,...FX];
+const AMPS=["Tube Preamp","POD Clean","POD Crunch","POD Drive","POD Layer","Small Tweed","Tweed Blues","Black Panel","Modern Class A","Brit Class A","Brit Blues","Brit Classic","Brit Hi Gain","Rectified '94","Modern Hi Gain","Fuzz Box","Jazz Clean","Boutique #1","Boutique #2","Brit Class A #2","Brit Class A #3","Small Tweed #2","Black Panel #2","Boutique #3","California Crunch #1","California Crunch #2","Rectified #2","Modern Hi Gain #2","Line 6 Twang","Line 6 Crunch #2","Line 6 Blues","Line 6 Insane"];
+const CABS=["1x8 '60 Tweed Champ","1x12 '52 Tweed Deluxe","1x12 '60 Vox AC15","1x12 '64 Blackface Deluxe","1x12 '98 Line 6 Flextone","2x12 '65 Blackface Twin","2x12 '67 Vox AC30","2x12 '95 Matchless Chieftain","2x12 '98 POD custom","4x10 '59 Bassman","4x10 '98 POD custom","4x12 '96 Marshall V30","4x12 '78 Marshall 70s","4x12 '97 Marshall off axis","4x12 '98 POD custom","Nessun cabinet"];
+const EFFECTS=["Chorus 2","Flanger 1","Rotary","Flanger 2","Delay/Chorus 1","Delay/Tremolo","Delay","Delay/Comp","Chorus 1","Tremolo","Bypass","Compressor","Delay/Chorus 2","Delay/Flanger 1","Delay/Swell","Delay/Flanger 2"];
+const MODELS=[{cc:12,name:"Amplificatore",list:AMPS,v:12},{cc:71,name:"Cabinet",list:CABS,v:11},{cc:19,name:"Effetto",list:EFFECTS,v:6}];
+
+let midi=null,out=null,current=1;
+const state={};
+const $=id=>document.getElementById(id);
+
+function log(txt){const l=$("log");l.textContent+=txt+"\n";l.scrollTop=l.scrollHeight}
+function ch(){return Number($("ch").value)}
+function send(bytes,txt){
+  const hex=bytes.map(b=>b.toString(16).padStart(2,"0").toUpperCase()).join(" ");
+  if(out){try{out.send(bytes)}catch(e){log("Errore invio: "+e.message);return}}
+  log((out?"":"[prova] ")+txt.padEnd(30)+hex);
+}
+function cc(n,v,label){state[n]=v;send([0xB0|ch(),n,v],`CC ${n} = ${v} (${label})`)}
+function pc(p,label){send([0xC0|ch(),p],`PC ${p} (${label})`)}
+const clamp=v=>Math.max(0,Math.min(127,Math.round(v)));
+
+// Canali
+for(let i=0;i<16;i++)$("ch").add(new Option(String(i+1),i));
+
+// ---- Preset del POD ----
+function pname(n){return n===0?"MAN":Math.ceil(n/4)+"ABCD"[(n-1)%4]}
+const pre=$("presets");
+for(let n=1;n<=36;n++){
+  const b=document.createElement("button");b.className="rb sm pbtn";b.textContent=pname(n);b.dataset.p=n;
+  b.onclick=()=>selectPreset(n);pre.appendChild(b);
+}
+function markPreset(n){
+  document.querySelectorAll(".pbtn").forEach(x=>x.classList.toggle("sel",+x.dataset.p===n));
+  $("lcd").textContent=pname(n);$("manual").classList.toggle("red",n===0);
+}
+function selectPreset(n){current=n;markPreset(n);if(n>0)$("slot").value=n;pc(n,n===0?"manual":"preset "+pname(n));scheduleRead()}
+for(let n=1;n<=36;n++)$("slot").add(new Option(pname(n),n));
+$("manual").onclick=()=>selectPreset(0);
+$("prev").onclick=()=>selectPreset(current>1?current-1:36);
+$("next").onclick=()=>selectPreset(current>0&&current<36?current+1:1);
+markPreset(1);
+
+// ---- Interruttori con LED ----
+TOGGLES.forEach(t=>{
+  const b=document.createElement("button");b.className="tg";b.setAttribute("aria-pressed","false");
+  b.innerHTML=`<span class="led"></span><span class="rb">${t.name}</span>`;
+  t.el=b;
+  t.set=on=>{b.setAttribute("aria-pressed",on);b.classList.toggle("on",on)};
+  b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";t.set(on);cc(t.cc,on?127:0,t.name+(on?" ON":" OFF"))};
+  state[t.cc]=0;$("toggles").appendChild(b);
+});
+
+// ---- Manopole rotanti ----
+function makeKnob(k,parent){
+  const id="k"+k.cc,w=document.createElement("div");w.className="knob";
+  w.innerHTML=`<div class="knwrap"><div class="kn"></div><div class="body"><div class="cap"></div><div class="ptr"></div></div></div>
+    <input type="range" class="sr" id="${id}" min="0" max="127" value="${k.v}">
+    <label for="${id}">${k.name}</label><output>${k.v}</output>`;
+  const r=w.querySelector("input"),o=w.querySelector("output"),ring=w.querySelector(".kn"),ptr=w.querySelector(".ptr"),body=w.querySelector(".body");
+  let t;
+  k.set=(v,doSend)=>{
+    v=clamp(v);r.value=v;o.textContent=v;state[k.cc]=v;
+    ptr.style.setProperty("--r",(-135+v/127*270)+"deg");ring.style.setProperty("--a",(v/127*270)+"deg");
+    if(doSend){clearTimeout(t);t=setTimeout(()=>cc(k.cc,v,k.name),25)}
+  };
+  k.set(k.v,false);
+  r.oninput=()=>k.set(+r.value,true);
+  let sy=0,sv=0,dragging=false;
+  const start=e=>{dragging=true;sy=e.clientY;sv=+r.value;e.target.setPointerCapture(e.pointerId);r.focus({preventScroll:true});e.preventDefault()};
+  const move=e=>{if(!dragging)return;const fine=e.shiftKey?0.2:0.7;k.set(sv+(sy-e.clientY)*fine,true)};
+  const end=()=>{dragging=false};
+  [body,ring].forEach(el=>{
+    el.addEventListener("pointerdown",start);el.addEventListener("pointermove",move);
+    el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
+    el.addEventListener("dblclick",()=>k.set(k.v,true));
+    el.addEventListener("wheel",e=>{e.preventDefault();k.set(+r.value+(e.deltaY<0?2:-2),true)},{passive:false});
+  });
+  parent.appendChild(w);
+}
+AMP.forEach(k=>makeKnob(k,$("ampKnobs")));
+PEDALS.forEach(k=>makeKnob(k,$("pedalKnobs")));
+FX.forEach(k=>makeKnob(k,$("fxKnobs")));
+
+// ---- Modelli ----
+MODELS.forEach(m=>{
+  const l=document.createElement("label");const id="m"+m.cc;l.htmlFor=id;l.textContent=m.name;
+  const s=document.createElement("select");s.id=id;
+  m.list.forEach((n,i)=>s.add(new Option(`${String(i).padStart(2,"0")} ${n}`,i)));s.value=m.v;state[m.cc]=m.v;m.el=s;
+  s.onchange=()=>cc(m.cc,+s.value,m.name+": "+m.list[s.value]);l.appendChild(s);$("models").appendChild(l);
+});
+
+$("tap").onclick=()=>cc(64,127,"tap tempo");
+function sendAllNow(){
+  [...MODELS,...KNOBS].forEach(k=>cc(k.cc,state[k.cc],k.name));
+  TOGGLES.forEach(t=>cc(t.cc,state[t.cc],t.name));
+}
+$("sendAll").onclick=sendAllNow;
+
+// ---- I miei preset (salvati in Chrome) ----
+const KEY="podProRemote.presets";
+function readStore(){try{const a=JSON.parse(localStorage.getItem(KEY));return Array.isArray(a)?a:[]}catch(e){return []}}
+function writeStore(a){try{localStorage.setItem(KEY,JSON.stringify(a));return true}catch(e){log("Non riesco a salvare i preset: usa Esporta su file.");return false}}
+let mine=readStore();
+
+function snapshot(){const s={};[...TOGGLES,...KNOBS,...MODELS].forEach(k=>s[k.cc]=state[k.cc]);return s}
+function applySnapshot(s){
+  TOGGLES.forEach(t=>{if(s[t.cc]!=null){state[t.cc]=s[t.cc];t.set(s[t.cc]>=64)}});
+  KNOBS.forEach(k=>{if(s[k.cc]!=null)k.set(s[k.cc],false)});
+  MODELS.forEach(m=>{if(s[m.cc]!=null){state[m.cc]=s[m.cc];m.el.value=s[m.cc]}});
+}
+function renderList(){
+  const l=$("plist");l.innerHTML="";
+  if(!mine.length){l.innerHTML='<p class="empty">Nessun preset salvato. Regola il suono, scrivi un nome e premi Salva.</p>';return}
+  mine.forEach((p,i)=>{
+    const it=document.createElement("div");it.className="item";
+    const nm=document.createElement("span");nm.className="nm";nm.textContent=p.name;
+    const dt=document.createElement("span");dt.className="dt";dt.textContent=new Date(p.date).toLocaleDateString("it-IT");
+    const ld=document.createElement("button");ld.className="rb red";ld.textContent="Carica";
+    ld.onclick=()=>{applySnapshot(p.values);log("— Preset \""+p.name+"\" —");sendAllNow()};
+    const ov=document.createElement("button");ov.className="rb";ov.textContent="Sovrascrivi";
+    ov.onclick=()=>{p.values=snapshot();p.date=Date.now();writeStore(mine);renderList();log("Preset \""+p.name+"\" aggiornato.")};
+    const del=document.createElement("button");del.className="rb";del.textContent="Elimina";
+    del.onclick=()=>{
+      if(del.dataset.armed){mine.splice(i,1);writeStore(mine);renderList();return}
+      del.dataset.armed="1";del.textContent="Conferma";
+      setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent="Elimina"}},3000);
+    };
+    it.append(nm,dt,ld,ov,del);l.appendChild(it);
+  });
+}
+$("psave").onclick=()=>{
+  const name=$("pname").value.trim()||("Preset "+(mine.length+1));
+  const ex=mine.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(ex){ex.values=snapshot();ex.date=Date.now()}else mine.push({name,date:Date.now(),values:snapshot()});
+  if(writeStore(mine))log("Salvato: \""+name+"\"");
+  $("pname").value="";renderList();
+};
+$("pname").addEventListener("keydown",e=>{if(e.key==="Enter")$("psave").click()});
+$("pexport").onclick=()=>{
+  const blob=new Blob([JSON.stringify(mine,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pod-pro-preset.json";
+  document.body.appendChild(a);a.click();a.remove();log("Scegli dove salvare il file dei preset.");
+};
+$("pimport").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{
+    const a=JSON.parse(rd.result);if(!Array.isArray(a))throw 0;
+    a.forEach(p=>{if(!p||!p.name||!p.values)return;const ex=mine.find(q=>q.name===p.name);ex?Object.assign(ex,p):mine.push(p)});
+    writeStore(mine);renderList();log("Importati "+a.length+" preset.");
+  }catch(err){log("File non valido: scegli un file esportato da questa pagina.")}e.target.value=""};
+  rd.readAsText(f);
+};
+renderList();
+
+// ---- Memoria del POD via SysEx (specifica POD Pro: header F0 00 01 0C 01) ----
+const HDR=[0xF0,0x00,0x01,0x0C,0x01];
+const NOREPLY="Nessuna risposta dal POD. Controlla il cavo dal MIDI OUT del POD al MIDI IN dell'interfaccia e che MIDI In sia selezionato.";
+let inp=null,sysexOK=false,waiter=null,pendingRestore=null;
+
+function sysReady(){
+  if(!out){log("Per questa funzione serve un'uscita MIDI collegata al POD.");return false}
+  if(!sysexOK){log("SysEx non disponibile: chiudi e riapri l'app.");return false}
+  return true;
+}
+function waitFor(op,ms){
+  return new Promise((res,rej)=>{waiter={op,res};setTimeout(()=>{if(waiter&&waiter.op===op){waiter=null;rej()}},ms)});
+}
+function onMsg(e){
+  const d=e.data,st=d[0]&0xF0;
+  // cambio canale fatto sul POD: aggiorna display e manopole
+  if(st===0xC0&&(d[0]&0x0F)===ch()){const n=d[1];current=n;markPreset(n);if(n>0)$("slot").value=n;scheduleRead();return}
+  // manopola girata sul POD: aggiorna il comando corrispondente
+  if(st===0xB0&&(d[0]&0x0F)===ch()){applyIncomingCC(d[1],d[2]);return}
+  if(d[0]===0xF0&&d[1]===0&&d[2]===1&&d[3]===0x0C&&d[4]===1&&d[5]===1&&waiter&&waiter.op===d[6]){
+    const w=waiter;waiter=null;w.res(d);
+  }
+}
+function armButton(b,label,ms,reset){
+  b.dataset.armed="1";b.textContent=label;
+  setTimeout(()=>{if(b.dataset.armed){delete b.dataset.armed;b.textContent=reset}},ms);
+}
+
+// ---- Lettura del preset dal POD (formato dati POD Pro / POD 2.0: 71 byte divisi in nibble) ----
+function decode(d,start){const b=[];for(let i=0;i<71;i++)b.push(((d[start+2*i]&15)<<4)|(d[start+2*i+1]&15));return b}
+const x2=v=>clamp(v*2);
+function parseProgram(b){
+  const s={};
+  [25,26,27,28,50,36,22,73].forEach((c,i)=>s[c]=b[i]?127:0);           // interruttori
+  s[12]=b[8]&31; s[13]=x2(b[9]); s[14]=x2(b[11]); s[15]=x2(b[12]);      // amp, drive, bassi, medi
+  s[16]=x2(b[13]); s[21]=x2(b[14]); s[17]=x2(b[15]);                    // alti, presence, volume
+  const ms=((b[27]<<16)|(b[28]<<8)|b[29])/6*0.192272;                  // tempo delay in ms
+  s[30]=clamp(ms/3150*127); s[32]=x2(b[34]); s[34]=x2(b[36]);           // delay
+  s[38]=x2(b[39]); s[39]=x2(b[40]); s[18]=x2(b[43]);                    // riverbero
+  s[71]=b[44]&15; s[72]=x2(b[45]); s[19]=b[46]&15;                      // cabinet, A.I.R., effetto
+  const name=String.fromCharCode(...b.slice(55,71)).replace(/[^\x20-\x7e]/g,"").trim();
+  return {s,name};
+}
+let readTimer=null,lastRaw=null;
+function scheduleRead(){clearTimeout(readTimer);readTimer=setTimeout(()=>readFromPod(true),250)}
+async function readFromPod(auto){
+  if(!out||!inp||!sysexOK){
+    if(!auto)log("Per leggere dal POD servono MIDI Out e MIDI In collegati e il SysEx attivo.");
+    return false;
+  }
+  const wait=waitFor(0x01,2500);
+  out.send([...HDR,0x00,0x01,0xF7]);
+  try{
+    const d=await wait;
+    if(d.length<8+142)throw 0;
+    const b=decode(d,8),{s,name}=parseProgram(b);
+    lastRaw=b;applySnapshot(s);$("lcdname").textContent=name||"—";
+    log("Letto dal POD"+(name?": «"+name+"»":"")+".");
+    return true;
+  }catch(err){log(auto?"Il POD non ha inviato i dati del preset: controlla il cavo verso MIDI In.":NOREPLY);return false}
+}
+function applyIncomingCC(n,v){
+  const t=TOGGLES.find(x=>x.cc===n);if(t){state[n]=v;t.set(v>=64);return}
+  const k=KNOBS.find(x=>x.cc===n);if(k){k.set(v,false);return}
+  const m=MODELS.find(x=>x.cc===n);if(m&&v<m.list.length){state[n]=v;m.el.value=v}
+}
+$("readPod").onclick=async()=>{
+  if(await readFromPod(false)&&lastRaw)
+    log("Dati grezzi: "+lastRaw.map(x=>x.toString(16).padStart(2,"0").toUpperCase()).join(" "));
+};
+
+// Save: chiede al POD il suono attuale (edit buffer) e lo riscrive nel canale scelto
+$("podsave").onclick=async()=>{
+  const b=$("podsave"),slot=+$("slot").value;
+  if(!b.dataset.armed){armButton(b,"Conferma: sovrascrivi "+pname(slot),4000,"Save");return}
+  delete b.dataset.armed;b.textContent="Save";
+  if(!sysReady())return;
+  const wait=waitFor(0x01,3000);
+  out.send([...HDR,0x00,0x01,0xF7]);log("Richiesta del suono attuale al POD…");
+  try{
+    const d=await wait;
+    const msg=[...HDR,0x01,0x00,slot-1,...Array.from(d.slice(7))];
+    out.send(msg);
+    log("Salvato nel canale "+pname(slot)+" ("+msg.length+" byte). Richiamalo dal POD per verificare.");
+  }catch(err){log(NOREPLY)}
+};
+
+// Backup: scarica tutti i 36 canali in un file .syx
+$("backup").onclick=async()=>{
+  if(!sysReady())return;
+  const wait=waitFor(0x02,10000);
+  out.send([...HDR,0x00,0x02,0xF7]);log("Richiesta backup dei 36 canali…");
+  try{
+    const d=await wait;
+    const name="pod-pro-backup-"+new Date().toISOString().slice(0,10)+".syx";
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([d],{type:"application/octet-stream"}));a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    log("Backup ricevuto ("+d.length+" byte): scegli dove salvare "+name+".");
+  }catch(err){log(NOREPLY)}
+};
+
+// Ripristino: rimanda al POD un file di backup
+$("restore").onclick=()=>{
+  const b=$("restore");
+  if(b.dataset.armed&&pendingRestore){
+    delete b.dataset.armed;b.textContent="Ripristina backup";
+    if(!sysReady())return;
+    out.send(pendingRestore);log("Backup inviato al POD ("+pendingRestore.length+" byte).");pendingRestore=null;return;
+  }
+  $("restoreFile").click();
+};
+$("restoreFile").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{
+    const d=new Uint8Array(rd.result);e.target.value="";
+    const ok=d.length>100&&HDR.every((v,i)=>d[i]===v)&&d[5]===1&&d[6]===2&&d[d.length-1]===0xF7;
+    if(!ok){log("Questo file non è un backup del POD Pro creato da questa pagina.");return}
+    pendingRestore=d;log("File "+f.name+" pronto. Premi di nuovo per confermare: sovrascrive tutti i 36 canali.");
+    armButton($("restore"),"Conferma ripristino 36 canali",8000,"Ripristina backup");
+  };
+  rd.readAsArrayBuffer(f);
+};
+
+// Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
+if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
+// ---- Web MIDI ----
+function setStatus(kind,txt){$("dot").className="led dot "+kind;$("stat").textContent=txt}
+function fillPorts(){
+  [["out",midi.outputs],["in",midi.inputs]].forEach(([id,ports])=>{
+    const sel=$(id),prev=sel.value;sel.length=1;
+    ports.forEach(p=>sel.add(new Option(p.name,p.id)));
+    if(prev&&[...sel.options].some(o=>o.value===prev))sel.value=prev;
+    else if(sel.length>1)sel.selectedIndex=1;
+  });
+  pickOut();pickIn();
+}
+function pickOut(){
+  out=midi&&$("out").value?midi.outputs.get($("out").value):null;
+  out?setStatus("on","Collegato"):setStatus("demo","Modalità prova");
+}
+function pickIn(){
+  if(inp)inp.onmidimessage=null;
+  inp=midi&&$("in").value?midi.inputs.get($("in").value):null;
+  if(inp)inp.onmidimessage=onMsg;
+}
+$("out").onchange=pickOut;$("in").onchange=pickIn;
+function startMidi(m){midi=m;m.onstatechange=fillPorts;fillPorts();log("MIDI pronto"+(sysexOK?" (SysEx attivo).":"."))}
+function midiFail(){setStatus("demo","MIDI non disponibile");log("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI.")}
+if(navigator.requestMIDIAccess){
+  navigator.requestMIDIAccess({sysex:true}).then(m=>{sysexOK=true;startMidi(m)})
+  .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log("SysEx non consentito: Save e Backup non funzioneranno.")}).catch(midiFail));
+}else{setStatus("demo","MIDI non disponibile");log("Il MIDI non è disponibile in questa installazione.")}
+</script>
+</body>
+</html>

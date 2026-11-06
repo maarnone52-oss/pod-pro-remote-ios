@@ -1,0 +1,68 @@
+POD Pro Remote per iPhone e iPad — guida all'installazione
+
+L'app per iPhone e iPad va compilata e firmata con un account Apple prima di
+poterla installare: è una regola di Apple. Il tuo Mac (Catalina) non ha un
+Xcode abbastanza recente, quindi la compilazione avviene su un Mac di GitHub,
+gratis, e l'app arriva sul telefono tramite TestFlight.
+
+COSA SERVE
+- Un account GitHub (gratuito): github.com
+- L'iscrizione Apple Developer Program (circa 99 € all'anno):
+  developer.apple.com/programs
+- L'app TestFlight sull'iPhone 15 o sull'iPad Pro (gratuita, App Store)
+- Per il collegamento al POD:
+  iPhone 15 (USB-C): interfaccia MIDI USB collegata alla porta USB-C
+  iPad Pro Lightning: adattatore Apple "da Lightning a USB 3 per fotocamere"
+  In alternativa a entrambi: un adattatore MIDI Bluetooth sul POD
+  (nell'app c'è il pulsante "Bluetooth" per abbinarlo)
+
+PASSO 1 — GitHub
+1. Crea l'account su github.com.
+2. Crea un repository nuovo e vuoto, per esempio "pod-pro-remote-ios"
+   (pulsante "New"). Può essere privato.
+3. Collega GitHub a Claude: apri claude.ai/code nel browser e segui la
+   richiesta "Connect GitHub"; accetta anche l'installazione della
+   Claude GitHub App sul repository (necessaria se è privato).
+4. Scrivi a Claude il nome del repository: Claude carica il progetto e
+   controlla che la compilazione riesca, correggendo eventuali errori.
+
+PASSO 2 — Apple (dopo l'iscrizione al Developer Program)
+1. Su appstoreconnect.apple.com > App > "+" > Nuova app:
+   - Piattaforma: iOS
+   - Nome: un nome a tua scelta (deve essere unico sull'App Store,
+     per esempio "POD Remote di <tuo cognome>")
+   - Identificativo pacchetto (Bundle ID): creane uno nuovo, per esempio
+     it.<tuocognome>.podproremote
+   L'app non verrà pubblicata: serve solo per TestFlight.
+2. Su appstoreconnect.apple.com > Utenti e accessi > Integrazioni >
+   Chiavi API di App Store Connect: genera una chiave con ruolo "Admin".
+   Annota "Issuer ID" e "ID chiave" e scarica il file .p8
+   (si scarica una sola volta: conservalo).
+3. Il Team ID si trova su developer.apple.com > Account > Membership.
+
+PASSO 3 — Inserisci i dati in GitHub (non scriverli nella chat)
+Nel repository: Settings > Secrets and variables > Actions > New repository secret.
+Crea questi cinque segreti:
+   APPLE_TEAM_ID   il Team ID
+   APP_BUNDLE_ID   il Bundle ID scelto al passo 2.1
+   ASC_KEY_ID      l'ID chiave
+   ASC_ISSUER_ID   l'Issuer ID
+   ASC_KEY_P8      tutto il contenuto del file .p8 (aprilo con TextEdit e copia)
+
+PASSO 4 — Compila e installa
+1. Nel repository: Actions > "App iOS" > Run workflow.
+   Dopo circa 10–15 minuti la versione viene caricata su TestFlight.
+2. Su App Store Connect > la tua app > TestFlight: aggiungi te stesso
+   tra i tester interni (la prima volta Apple può impiegare qualche ora
+   per elaborare la versione).
+3. Sull'iPhone o sull'iPad apri TestFlight e installa "POD Pro Remote".
+
+Le versioni TestFlight durano 90 giorni: per rinnovarla basta rilanciare
+"Run workflow".
+
+USO
+- In alto scegli "MIDI Out" e "MIDI In" (la tua interfaccia o l'adattatore
+  Bluetooth) e il canale del POD.
+- Backup ed "Esporta su file" aprono il pannello di condivisione:
+  scegli "Salva in File" per conservarli in iCloud o sul dispositivo.
+- "Importa da file" e "Ripristina backup" aprono l'app File.
