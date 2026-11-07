@@ -273,7 +273,7 @@ input[type=text],select{font-size:16px}
           <select id="ch"></select>
           <div class="status"><span class="led dot" id="dot"></span><span id="stat">Avvio…</span></div>
           <button class="rb" id="bt" hidden>Bluetooth</button>
-          <div class="vista"><button class="rb" id="vCompatta" aria-pressed="false" data-t>Compatta</button><button class="rb" id="vTema" aria-pressed="false" data-t>Rosso</button><select id="lang" data-ta aria-label="Lingua"><option value="it">IT</option><option value="en">EN</option></select></div>
+          <div class="vista"><button class="rb" id="vCompatta" aria-pressed="false" data-t>Compatta</button><button class="rb" id="vTema" aria-pressed="false" data-t>Rosso</button><button class="rb" id="lang" aria-label="Lingua / Language">EN</button></div>
         </div>
       </div>
       <nav class="pagine" data-ta aria-label="Pagine">
@@ -363,6 +363,8 @@ input[type=text],select{font-size:16px}
 </div>
 
 <script>
+// Eventuali errori compaiono nella pagina Messaggi
+window.addEventListener("error",e=>{try{const l=document.getElementById("log");l.textContent+="⚠ "+e.message+" (riga "+e.lineno+")\n"}catch(x){}});
 // ---- Mappa MIDI POD Pro / POD 2.0 (Line 6 MIDI CC Reference) ----
 const TOGGLES=[
   {cc:25,name:"Drive"},{cc:26,name:"Vol Boost"},{cc:27,name:"Presence"},
@@ -924,7 +926,8 @@ function initMidi(){
 // ---- Applica la lingua a tutto il pannello (scelta ricordata su questo dispositivo) ----
 function podApplyLang(l,save){
   podLang=l==="en"?"en":"it";
-  document.documentElement.lang=podLang;$("lang").value=podLang;
+  document.documentElement.lang=podLang;$("lang").textContent=podLang==="en"?"IT":"EN";
+  try{
   const sw=(el,key,set)=>{if(el.dataset[key]==null)el.dataset[key]=set();return el.dataset[key]};
   document.querySelectorAll("[data-t]").forEach(el=>{el.textContent=podTr(sw(el,"it",()=>el.textContent))});
   document.querySelectorAll("[data-tp]").forEach(el=>{el.placeholder=podTr(sw(el,"itp",()=>el.placeholder))});
@@ -938,9 +941,10 @@ function podApplyLang(l,save){
   if(!learn)setTuner(tunerOn);
   $("stat").textContent=podTr(podStatusKey);
   renderList();renderFactory();
+  }catch(err){log("⚠ "+err.message)}
   if(save){try{localStorage.setItem(POD_LKEY,podLang)}catch(e){}}
 }
-$("lang").onchange=()=>podApplyLang($("lang").value,true);
+$("lang").addEventListener("click",()=>podApplyLang(podLang==="en"?"it":"en",true));
 podApplyLang(podLang,false);
 </script>
 </body>
