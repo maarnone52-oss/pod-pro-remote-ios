@@ -24,6 +24,16 @@ NOTE
 - Ogni modifica al pannello caricata su GitHub aggiorna la pagina da sola
   in circa un minuto.
 
+TEMPO DEL DELAY IN BPM
+Nella pagina Effetti, sotto le manopole, c'è il display "Tempo del delay":
+imposta il tempo del delay in BPM (da 40 a 240, una ripetizione per battito).
+- tocca + o − per cambiare di 1 BPM; tieni premuto per scorrere veloce
+- Tap BPM: batti a tempo almeno due volte
+Sotto il numero vedi i millisecondi inviati al POD e i BPM reali: il POD
+regola il delay a passi di circa 25 ms, quindi a tempi veloci il valore
+reale può scostarsi di qualche BPM. Se giri la manopola Delay tempo,
+il display si aggiorna da solo.
+
 TUNER
 Il tasto Tuner, accanto a Manual, accende e spegne l'accordatore del POD.
 La prima volta il pannello deve imparare il comando dal POD (serve il cavo

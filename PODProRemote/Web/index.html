@@ -259,6 +259,15 @@ body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
   #ampKnobs .cap,#pedalKnobs .cap{inset:4px}
   #ampKnobs .ptr::before,#pedalKnobs .ptr::before{top:4.5px;width:2px;height:9px;margin-left:-1px}
 }
+/* ---- Display BPM del delay ---- */
+.bpmrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.bpmrow .eng{flex-basis:100%}
+.bpmrow .lcd{min-width:0;padding:4px 12px}
+.bpmrow .lcd span{min-width:3ch;font-size:34px}
+.bpmrow .lcd small{min-width:0;max-width:none;font-size:11px}
+.bpmrow .rb.pm{min-width:42px;font-size:18px;padding:7px 10px}
+body.compatta .bpmrow .lcd span{font-size:24px}
+body.compatta .bpmrow .rb.pm{min-width:34px;font-size:15px;padding:5px 8px}
 </style>
 </head>
 <body class="rosso">
@@ -316,6 +325,13 @@ body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
       <div class="grp"><span class="eng" data-t>Effetti on / off</span><div class="toggles" id="toggles"></div></div>
       <div class="divider"></div>
       <div class="grp"><span class="eng" data-t>Delay · Modulazione · Riverbero</span><div class="knobs" id="fxKnobs"></div></div>
+      <div class="bpmrow">
+        <span class="eng" data-t>Tempo del delay</span>
+        <button class="rb pm" id="bpmDown" data-ta aria-label="BPM meno">−</button>
+        <div class="lcd" aria-live="polite"><span id="bpm">120</span><small id="bpmInfo">BPM</small></div>
+        <button class="rb pm" id="bpmUp" data-ta aria-label="BPM più">+</button>
+        <button class="rb" id="bpmTap" data-t>Tap BPM</button>
+      </div>
       <div class="divider"></div>
       <div class="models" id="models"></div>
       <div class="actions">
@@ -408,6 +424,7 @@ const $=id=>document.getElementById(id);
 // ---- Lingua: italiano / inglese ----
 // Le chiavi sono i testi italiani; POD_EN contiene la traduzione inglese.
 const POD_EN={
+"Tempo del delay":"Delay tempo","BPM meno":"BPM down","BPM più":"BPM up","{ms} ms · sul POD {r} BPM":"{ms} ms · on the POD {r} BPM",
 "Compatta":"Compact","Pagine":"Pages","Effetti":"Effects","Canali":"Channels","Preset":"Presets",
 "Messaggi":"Messages","Tutto":"All",
 "Tocca due pulsanti per vedere due pagine insieme · tocca di nuovo per chiudere":"Tap two buttons to see two pages together · tap again to close",
@@ -575,6 +592,45 @@ function makeKnob(k,parent){
 AMP.forEach(k=>makeKnob(k,$("ampKnobs")));
 PEDALS.forEach(k=>makeKnob(k,$("pedalKnobs")));
 FX.forEach(k=>makeKnob(k,$("fxKnobs")));
+
+// ---- Tempo del delay in BPM (semiminima): 40–240 BPM -> Delay tempo (CC 30, 0–127 = 0–3150 ms) ----
+const DELAY_MAX_MS=3150,BPM_MIN=40,BPM_MAX=240;
+const dKnob=KNOBS.find(k=>k.cc===30);
+let bpm=120,bpmFromApp=false;
+const bpmToCC=b=>clamp(60000/b/DELAY_MAX_MS*127);
+const ccToMs=v=>v/127*DELAY_MAX_MS;
+function showBpm(){
+  const v=state[30]!=null?state[30]:bpmToCC(bpm),ms=Math.round(ccToMs(v));
+  $("bpm").textContent=String(bpm);
+  $("bpmInfo").textContent=ms>0?podT("{ms} ms · sul POD {r} BPM",{ms,r:Math.round(60000/ms)}):"BPM";
+}
+function setBpm(b,send){
+  bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,Math.round(b)));
+  if(send){bpmFromApp=true;dKnob.set(bpmToCC(bpm),true);bpmFromApp=false}
+  showBpm();
+}
+// quando la manopola Delay tempo cambia (a mano, da un preset o dal POD) il display segue
+{const orig=dKnob.set;dKnob.set=(v,doSend)=>{orig(v,doSend);
+  if(!bpmFromApp){const ms=ccToMs(state[30]);if(ms>0)bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,Math.round(60000/ms)))}
+  showBpm()}}
+// + e −: un clic = 1 BPM; tenendo premuto scorre veloce
+function holdButton(el,step){
+  let t1=null,t2=null;
+  const stop=()=>{clearTimeout(t1);clearInterval(t2)};
+  el.addEventListener("pointerdown",e=>{e.preventDefault();setBpm(bpm+step,true);stop();t1=setTimeout(()=>{t2=setInterval(()=>setBpm(bpm+step,true),70)},450)});
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>el.addEventListener(ev,stop));
+  el.addEventListener("contextmenu",e=>e.preventDefault());
+}
+holdButton($("bpmDown"),-1);holdButton($("bpmUp"),1);
+// Tap BPM: batti almeno due volte a tempo; dopo 2 secondi di pausa si riparte
+let taps=[];
+$("bpmTap").addEventListener("pointerdown",e=>{
+  e.preventDefault();const now=performance.now();
+  if(taps.length&&now-taps[taps.length-1]>2000)taps=[];
+  taps.push(now);if(taps.length>5)taps.shift();
+  if(taps.length>=2){const d=(taps[taps.length-1]-taps[0])/(taps.length-1);setBpm(60000/d,true)}
+});
+setBpm(60000/ccToMs(state[30]),false);
 
 // ---- Modelli ----
 MODELS.forEach(m=>{
@@ -914,7 +970,7 @@ function podApplyLang(l,save){
   $("podsave").textContent="Save";
   if(!learn)setTuner(tunerOn);
   $("stat").textContent=podTr(podStatusKey);
-  renderList();renderFactory();
+  renderList();renderFactory();showBpm();
   }catch(err){log("⚠ "+err.message)}
   if(save){
     try{localStorage.setItem(POD_LKEY,podLang)}catch(e){}

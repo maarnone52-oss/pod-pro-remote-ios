@@ -21,6 +21,16 @@ NOTES
 - Saved presets stay in the browser on that device: use "Export to file"
   from time to time to keep a copy.
 
+DELAY TEMPO IN BPM
+On the Effects page, below the knobs, there is the "Delay tempo" display:
+it sets the delay time in BPM (40 to 240, one repeat per beat).
+- tap + or − to change by 1 BPM; hold to scroll fast
+- Tap BPM: tap in time at least twice
+Below the number you see the milliseconds sent to the POD and the actual BPM:
+the POD sets the delay in steps of about 25 ms, so at fast tempos the actual
+value can differ by a few BPM. If you turn the Delay time knob, the display
+follows it.
+
 TUNER
 The Tuner button, next to Manual, turns the POD's tuner on and off.
 The first time, the panel must learn the command from the POD (you need the
