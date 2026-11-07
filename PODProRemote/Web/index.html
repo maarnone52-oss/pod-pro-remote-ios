@@ -246,6 +246,19 @@ body.compatta .unit.head .face{gap:6px;padding-block:7px}
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 input[type=text],.log{-webkit-user-select:text;user-select:text}
 input[type=text],select{font-size:16px}
+/* ---- Manopole nere zigrinate, come i potenziometri del POD Pro ---- */
+.body{background:repeating-conic-gradient(#0c0d0f 0 5deg,#2d2f33 5deg 10deg);
+  box-shadow:0 6px 10px rgba(0,0,0,.55),0 2px 3px rgba(0,0,0,.45)}
+.body::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,transparent 0 60%,rgba(0,0,0,.35) 100%)}
+.cap{inset:6px;background:radial-gradient(circle at 45% 30%,#34363a,#17181b 60%,#0e0f11);
+  box-shadow:0 0 0 1px #050506,inset 0 1px 0 rgba(255,255,255,.16)}
+.ptr::before{top:7px;width:2.5px;height:15px;margin-left:-1.25px;border-radius:1px;background:#fafafa;box-shadow:none}
+body.compatta .cap{inset:4px}
+body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
+@media (max-width:700px){
+  #ampKnobs .cap,#pedalKnobs .cap{inset:4px}
+  #ampKnobs .ptr::before,#pedalKnobs .ptr::before{top:4.5px;width:2px;height:9px;margin-left:-1px}
+}
 </style>
 </head>
 <body>
