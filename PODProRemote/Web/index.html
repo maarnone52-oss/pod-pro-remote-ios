@@ -916,9 +916,13 @@ function podApplyLang(l,save){
   $("stat").textContent=podTr(podStatusKey);
   renderList();renderFactory();
   }catch(err){log("⚠ "+err.message)}
-  if(save){try{localStorage.setItem(POD_LKEY,podLang)}catch(e){}}
+  if(save){
+    try{localStorage.setItem(POD_LKEY,podLang)}catch(e){}
+    try{if(podBridge)podBridge.setLang(podLang)}catch(e){}
+  }
 }
 $("lang").addEventListener("click",()=>podApplyLang(podLang==="en"?"it":"en",true));
+try{if(podBridge&&podBridge.onLang)podBridge.onLang(l=>podApplyLang(l,false))}catch(e){}
 podApplyLang(podLang,false);
 
 // ---- Web MIDI ----
