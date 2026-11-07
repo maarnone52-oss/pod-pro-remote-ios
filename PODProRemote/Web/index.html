@@ -485,7 +485,7 @@ function podStartLang(){
   if(!l)l=String(navigator.language||"").toLowerCase().startsWith("it")?"it":"en";
   return l==="en"?"en":"it";
 }
-let podLang=podStartLang();
+let podLang=podStartLang(),podStatusKey="Avvio…";
 const podTr=s=>podLang==="en"&&POD_EN[s]!=null?POD_EN[s]:s;
 const podT=(s,v)=>podTr(s).replace(/\{(\w+)\}/g,(m,k)=>v&&v[k]!=null?v[k]:m);
 
@@ -886,43 +886,6 @@ renderFactory();
 })();
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
 if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
-// ---- Web MIDI ----
-let podStatusKey="Avvio…";
-function setStatus(kind,key){podStatusKey=key;$("dot").className="led dot "+kind;$("stat").textContent=podTr(key)}
-function fillPorts(){
-  [["out",midi.outputs],["in",midi.inputs]].forEach(([id,ports])=>{
-    const sel=$(id),prev=sel.value;sel.length=1;
-    ports.forEach(p=>sel.add(new Option(p.name,p.id)));
-    if(prev&&[...sel.options].some(o=>o.value===prev))sel.value=prev;
-    else if(sel.length>1)sel.selectedIndex=1;
-  });
-  pickOut();pickIn();
-}
-function pickOut(){
-  out=midi&&$("out").value?midi.outputs.get($("out").value):null;
-  out?setStatus("on","Collegato"):setStatus("demo","Modalità prova");
-}
-function pickIn(){
-  if(inp)inp.onmidimessage=null;
-  inp=midi&&$("in").value?midi.inputs.get($("in").value):null;
-  if(inp)inp.onmidimessage=onMsg;
-}
-$("out").onchange=pickOut;$("in").onchange=pickIn;
-function startMidi(m){midi=m;m.onstatechange=fillPorts;fillPorts();log(podTr(sysexOK?"MIDI pronto (SysEx attivo).":"MIDI pronto."))}
-function midiFail(){setStatus("demo","MIDI non disponibile");log(podTr("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI."))}
-// Alcuni browser per iPhone/iPad (es. Web MIDI Browser) aggiungono il MIDI alla pagina
-// qualche istante dopo l'apertura: si aspetta fino a 10 secondi prima di arrendersi.
-function initMidi(){
-  navigator.requestMIDIAccess({sysex:true}).then(m=>{sysexOK=true;startMidi(m)})
-  .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log(podTr("SysEx non consentito: Save e Backup non funzioneranno."))}).catch(midiFail));
-}
-(function waitMidi(tries){
-  if(navigator.requestMIDIAccess)return initMidi();
-  if(tries===0)setStatus("demo","Attendo il MIDI…");
-  if(tries<50)return setTimeout(()=>waitMidi(tries+1),200);
-  setStatus("demo","MIDI non disponibile");
-  log(podTr("Il MIDI non è disponibile: su iPhone e iPad apri questa pagina con l'app Web MIDI Browser (Safari non supporta il MIDI)."));
-})(0);
 // ---- Applica la lingua a tutto il pannello (scelta ricordata su questo dispositivo) ----
 function podApplyLang(l,save){
   podLang=l==="en"?"en":"it";
@@ -946,6 +909,43 @@ function podApplyLang(l,save){
 }
 $("lang").addEventListener("click",()=>podApplyLang(podLang==="en"?"it":"en",true));
 podApplyLang(podLang,false);
+
+// ---- Web MIDI ----
+function setStatus(kind,key){podStatusKey=key;$("dot").className="led dot "+kind;$("stat").textContent=podTr(key)}
+function fillPorts(){
+  [["out",midi.outputs],["in",midi.inputs]].forEach(([id,ports])=>{
+    const sel=$(id),prev=sel.value;sel.length=1;
+    ports.forEach(p=>sel.add(new Option(p.name,p.id)));
+    if(prev&&[...sel.options].some(o=>o.value===prev))sel.value=prev;
+    else if(sel.length>1)sel.selectedIndex=1;
+  });
+  pickOut();pickIn();
+}
+function pickOut(){
+  out=midi&&$("out").value?midi.outputs.get($("out").value):null;
+  out?setStatus("on","Collegato"):setStatus("demo","Modalità prova");
+}
+function pickIn(){
+  if(inp)inp.onmidimessage=null;
+  inp=midi&&$("in").value?midi.inputs.get($("in").value):null;
+  if(inp)inp.onmidimessage=onMsg;
+}
+$("out").onchange=pickOut;$("in").onchange=pickIn;
+function startMidi(m){midi=m;try{m.onstatechange=fillPorts}catch(e){}fillPorts();log(podTr(sysexOK?"MIDI pronto (SysEx attivo).":"MIDI pronto."))}
+function midiFail(){setStatus("demo","MIDI non disponibile");log(podTr("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI."))}
+// Alcuni browser per iPhone/iPad (es. Web MIDI Browser) aggiungono il MIDI alla pagina
+// qualche istante dopo l'apertura: si aspetta fino a 10 secondi prima di arrendersi.
+function initMidi(){
+  navigator.requestMIDIAccess({sysex:true}).then(m=>{sysexOK=true;startMidi(m)})
+  .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log(podTr("SysEx non consentito: Save e Backup non funzioneranno."))}).catch(midiFail));
+}
+try{(function waitMidi(tries){
+  if(navigator.requestMIDIAccess)return initMidi();
+  if(tries===0)setStatus("demo","Attendo il MIDI…");
+  if(tries<50)return setTimeout(()=>waitMidi(tries+1),200);
+  setStatus("demo","MIDI non disponibile");
+  log(podTr("Il MIDI non è disponibile: su iPhone e iPad apri questa pagina con l'app Web MIDI Browser (Safari non supporta il MIDI)."));
+})(0);}catch(err){log("⚠ MIDI: "+err.message)}
 </script>
 </body>
 </html>
