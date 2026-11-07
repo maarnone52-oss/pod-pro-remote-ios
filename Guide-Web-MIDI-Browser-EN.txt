@@ -28,8 +28,8 @@ it sets the delay time in BPM (40 to 240, one repeat per beat).
 - Tap BPM: tap in time at least twice
 Below the number you see the milliseconds sent to the POD and the actual BPM:
 the POD sets the delay in steps of about 25 ms, so at fast tempos the actual
-value can differ by a few BPM. If you turn the Delay time knob, the display
-follows it.
+value can differ by a few BPM. The Delay time knob is in BPM too: fully left 40 BPM, fully right
+240 BPM; display and knob move together.
 
 TUNER
 The Tuner button, next to Manual, turns the POD's tuner on and off.

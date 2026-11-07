@@ -31,8 +31,8 @@ imposta il tempo del delay in BPM (da 40 a 240, una ripetizione per battito).
 - Tap BPM: batti a tempo almeno due volte
 Sotto il numero vedi i millisecondi inviati al POD e i BPM reali: il POD
 regola il delay a passi di circa 25 ms, quindi a tempi veloci il valore
-reale può scostarsi di qualche BPM. Se giri la manopola Delay tempo,
-il display si aggiorna da solo.
+reale può scostarsi di qualche BPM. Anche la manopola Delay tempo è in BPM: tutta a sinistra 40 BPM,
+tutta a destra 240 BPM; display e manopola si muovono insieme.
 
 TUNER
 Il tasto Tuner, accanto a Manual, accende e spegne l'accordatore del POD.

@@ -407,11 +407,22 @@ const AMP=[
 ];
 const PEDALS=[{cc:7,name:"Volume pedale",v:127},{cc:4,name:"Wah",v:64}];
 const FX=[
-  {cc:34,name:"Delay livello",v:40},{cc:32,name:"Ripetizioni",v:40},{cc:30,name:"Delay tempo",v:50},
+  {cc:34,name:"Delay livello",v:40},{cc:32,name:"Ripetizioni",v:40},{cc:30,name:"Delay tempo",v:21},
   {cc:51,name:"Mod velocità",v:40},{cc:52,name:"Mod profondità",v:60},
   {cc:18,name:"Riverbero",v:40},{cc:38,name:"Decay",v:60},{cc:39,name:"Tono riverbero",v:64}
 ];
 const KNOBS=[...AMP,...PEDALS,...FX];
+// Delay tempo: il POD va da 0 a 3150 ms (CC 0–127). La manopola copre solo 40–240 BPM
+// (semiminima): tutta a sinistra = 40 BPM, tutta a destra = 240 BPM.
+const DELAY_MAX_MS=3150,BPM_MIN=40,BPM_MAX=240;
+const clampBpm=b=>Math.max(BPM_MIN,Math.min(BPM_MAX,Math.round(b)));
+const bpmToCC=b=>Math.max(0,Math.min(127,Math.round(60000/b/DELAY_MAX_MS*127)));
+const ccToMs=v=>v/127*DELAY_MAX_MS;
+const ccToBpm=v=>{const ms=ccToMs(v);return ms>0?60000/ms:Infinity};
+{const d=FX.find(k=>k.cc===30);
+  d.fromPos=pos=>bpmToCC(BPM_MIN+pos/127*(BPM_MAX-BPM_MIN));
+  d.toPos=v=>(clampBpm(ccToBpm(v))-BPM_MIN)/(BPM_MAX-BPM_MIN)*127;
+  d.show=v=>{const b=ccToBpm(v);return (isFinite(b)?Math.round(b):"—")+" BPM"};}
 const AMPS=["Tube Preamp","POD Clean","POD Crunch","POD Drive","POD Layer","Small Tweed","Tweed Blues","Black Panel","Modern Class A","Brit Class A","Brit Blues","Brit Classic","Brit Hi Gain","Rectified '94","Modern Hi Gain","Fuzz Box","Jazz Clean","Boutique #1","Boutique #2","Brit Class A #2","Brit Class A #3","Small Tweed #2","Black Panel #2","Boutique #3","California Crunch #1","California Crunch #2","Rectified #2","Modern Hi Gain #2","Line 6 Twang","Line 6 Crunch #2","Line 6 Blues","Line 6 Insane"];
 const CABS=["1x8 '60 Tweed Champ","1x12 '52 Tweed Deluxe","1x12 '60 Vox AC15","1x12 '64 Blackface Deluxe","1x12 '98 Line 6 Flextone","2x12 '65 Blackface Twin","2x12 '67 Vox AC30","2x12 '95 Matchless Chieftain","2x12 '98 POD custom","4x10 '59 Bassman","4x10 '98 POD custom","4x12 '96 Marshall V30","4x12 '78 Marshall 70s","4x12 '97 Marshall off axis","4x12 '98 POD custom","Nessun cabinet"];
 const EFFECTS=["Chorus 2","Flanger 1","Rotary","Flanger 2","Delay/Chorus 1","Delay/Tremolo","Delay","Delay/Comp","Chorus 1","Tremolo","Bypass","Compressor","Delay/Chorus 2","Delay/Flanger 1","Delay/Swell","Delay/Flanger 2"];
@@ -570,22 +581,27 @@ function makeKnob(k,parent){
   k.lab=w.querySelector("label");
   const r=w.querySelector("input"),o=w.querySelector("output"),ring=w.querySelector(".kn"),ptr=w.querySelector(".ptr"),body=w.querySelector(".body");
   let t;
-  k.set=(v,doSend)=>{
-    v=clamp(v);r.value=v;o.textContent=v;state[k.cc]=v;
-    ptr.style.setProperty("--r",(-135+v/127*270)+"deg");ring.style.setProperty("--a",(v/127*270)+"deg");
-    if(doSend){clearTimeout(t);t=setTimeout(()=>cc(k.cc,v,podTr(k.name)),25)}
+  const apply=(v,pos,doSend)=>{
+    r.value=pos;o.textContent=k.show?k.show(v):v;state[k.cc]=v;
+    ptr.style.setProperty("--r",(-135+pos/127*270)+"deg");ring.style.setProperty("--a",(pos/127*270)+"deg");
+    clearTimeout(t);   // un valore nuovo sostituisce quello ancora in attesa di invio
+    if(doSend)t=setTimeout(()=>cc(k.cc,v,podTr(k.name)),25);
+    if(k.onChange)k.onChange(v);
   };
+  // set: valore MIDI (da preset, dal POD, ecc.) · setPos: posizione della manopola (da mouse o dito)
+  k.set=(v,doSend)=>{v=clamp(v);apply(v,k.toPos?k.toPos(v):v,doSend)};
+  k.setPos=(pos,doSend)=>{pos=Math.max(0,Math.min(127,pos));apply(k.fromPos?k.fromPos(pos):clamp(pos),pos,doSend)};
   k.set(k.v,false);
-  r.oninput=()=>k.set(+r.value,true);
+  r.oninput=()=>k.setPos(+r.value,true);
   let sy=0,sv=0,dragging=false;
   const start=e=>{dragging=true;sy=e.clientY;sv=+r.value;e.target.setPointerCapture(e.pointerId);r.focus({preventScroll:true});e.preventDefault()};
-  const move=e=>{if(!dragging)return;const fine=e.shiftKey?0.2:0.7;k.set(sv+(sy-e.clientY)*fine,true)};
+  const move=e=>{if(!dragging)return;const fine=e.shiftKey?0.2:0.7;k.setPos(sv+(sy-e.clientY)*fine,true)};
   const end=()=>{dragging=false};
   [body,ring].forEach(el=>{
     el.addEventListener("pointerdown",start);el.addEventListener("pointermove",move);
     el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
     el.addEventListener("dblclick",()=>k.set(k.v,true));
-    el.addEventListener("wheel",e=>{e.preventDefault();k.set(+r.value+(e.deltaY<0?2:-2),true)},{passive:false});
+    el.addEventListener("wheel",e=>{e.preventDefault();k.setPos(+r.value+(e.deltaY<0?2:-2),true)},{passive:false});
   });
   parent.appendChild(w);
 }
@@ -594,25 +610,20 @@ PEDALS.forEach(k=>makeKnob(k,$("pedalKnobs")));
 FX.forEach(k=>makeKnob(k,$("fxKnobs")));
 
 // ---- Tempo del delay in BPM (semiminima): 40–240 BPM -> Delay tempo (CC 30, 0–127 = 0–3150 ms) ----
-const DELAY_MAX_MS=3150,BPM_MIN=40,BPM_MAX=240;
 const dKnob=KNOBS.find(k=>k.cc===30);
 let bpm=120,bpmFromApp=false;
-const bpmToCC=b=>clamp(60000/b/DELAY_MAX_MS*127);
-const ccToMs=v=>v/127*DELAY_MAX_MS;
 function showBpm(){
   const v=state[30]!=null?state[30]:bpmToCC(bpm),ms=Math.round(ccToMs(v));
   $("bpm").textContent=String(bpm);
   $("bpmInfo").textContent=ms>0?podT("{ms} ms · sul POD {r} BPM",{ms,r:Math.round(60000/ms)}):"BPM";
 }
 function setBpm(b,send){
-  bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,Math.round(b)));
+  bpm=clampBpm(b);
   if(send){bpmFromApp=true;dKnob.set(bpmToCC(bpm),true);bpmFromApp=false}
   showBpm();
 }
 // quando la manopola Delay tempo cambia (a mano, da un preset o dal POD) il display segue
-{const orig=dKnob.set;dKnob.set=(v,doSend)=>{orig(v,doSend);
-  if(!bpmFromApp){const ms=ccToMs(state[30]);if(ms>0)bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,Math.round(60000/ms)))}
-  showBpm()}}
+dKnob.onChange=v=>{if(!bpmFromApp&&ccToMs(v)>0)bpm=clampBpm(ccToBpm(v));if($("bpm"))showBpm()};
 // + e −: un clic = 1 BPM; tenendo premuto scorre veloce
 function holdButton(el,step){
   let t1=null,t2=null;
