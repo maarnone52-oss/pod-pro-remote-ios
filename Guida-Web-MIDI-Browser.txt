@@ -14,7 +14,7 @@ INSTALLAZIONE
 
 LINGUA
 Il pannello è in italiano e in inglese e segue la lingua del dispositivo.
-Per cambiarla tocca il pulsante EN (o IT) in alto, accanto a Compatta e Rosso.
+Per cambiarla tocca il pulsante EN (o IT) in alto, accanto a Compatta.
 La scelta resta memorizzata su quel dispositivo.
 (English guide: Guide-Web-MIDI-Browser-EN.txt)
 

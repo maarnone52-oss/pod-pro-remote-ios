@@ -14,7 +14,7 @@ INSTALLATION
 
 LANGUAGE
 The panel is in English and Italian and follows the device's language.
-To change it tap the IT (or EN) button at the top, next to Compact and Red.
+To change it tap the IT (or EN) button at the top, next to Compact.
 The choice is remembered on that device.
 
 NOTES

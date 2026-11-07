@@ -144,7 +144,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,label.rb:focus-wit
   .presets{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 
-/* ---- Tema "Rosso POD": frontale in alluminio satinato rosso come il POD Pro originale ---- */
+/* ---- Tema "Rosso POD" (unico tema): frontale in alluminio satinato rosso come il POD Pro originale ---- */
 body.rosso{--metal-hi:#c9352c;--metal-lo:#8f1c16;--engrave:#fbf1ee;--engrave-soft:#f2c7bf;--ring:#fff3e6;--ring-off:rgba(40,4,2,.45)}
 body.rosso .face{box-shadow:inset 0 1px 0 rgba(255,210,200,.55),inset 0 -2px 3px rgba(0,0,0,.3);
   background:
@@ -261,7 +261,7 @@ body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
 }
 </style>
 </head>
-<body>
+<body class="rosso">
 <div class="wrap">
 
   <!-- Unità 1: testa, display, collegamento e menu pagine (resta sempre fissa in alto) -->
@@ -286,7 +286,7 @@ body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
           <select id="ch"></select>
           <div class="status"><span class="led dot" id="dot"></span><span id="stat">Avvio…</span></div>
           <button class="rb" id="bt" hidden>Bluetooth</button>
-          <div class="vista"><button class="rb" id="vCompatta" aria-pressed="false" data-t>Compatta</button><button class="rb" id="vTema" aria-pressed="false" data-t>Rosso</button><button class="rb" id="lang" aria-label="Lingua / Language">EN</button></div>
+          <div class="vista"><button class="rb" id="vCompatta" aria-pressed="false" data-t>Compatta</button><button class="rb" id="lang" aria-label="Lingua / Language">EN</button></div>
         </div>
       </div>
       <nav class="pagine" data-ta aria-label="Pagine">
@@ -408,7 +408,7 @@ const $=id=>document.getElementById(id);
 // ---- Lingua: italiano / inglese ----
 // Le chiavi sono i testi italiani; POD_EN contiene la traduzione inglese.
 const POD_EN={
-"Compatta":"Compact","Rosso":"Red","Pagine":"Pages","Effetti":"Effects","Canali":"Channels","Preset":"Presets",
+"Compatta":"Compact","Pagine":"Pages","Effetti":"Effects","Canali":"Channels","Preset":"Presets",
 "Messaggi":"Messages","Tutto":"All",
 "Tocca due pulsanti per vedere due pagine insieme · tocca di nuovo per chiudere":"Tap two buttons to see two pages together · tap again to close",
 "Accende e spegne l'accordatore del POD. Tieni premuto per reimparare il comando":"Turns the POD tuner on and off. Press and hold to learn the command again",
@@ -861,17 +861,15 @@ function renderFactory(){$("factory").innerHTML="";FACTORY.forEach(p=>{
   it.append(nm,ld,cp,dt);$("factory").appendChild(it);
 });}
 renderFactory();
-// ---- Vista: compatta e tema "Rosso POD" (scelte ricordate su questo dispositivo) ----
+// ---- Vista compatta (scelta ricordata su questo dispositivo); il tema è sempre "Rosso POD" ----
 (function(){
   const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
   const put=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
   const small=Math.min(screen.width,screen.height)<600;
   const apply=(cls,btn,on)=>{document.body.classList.toggle(cls,on);$(btn).setAttribute("aria-pressed",on);$(btn).classList.toggle("red",on)};
-  let comp=get("podVistaCompatta"),rosso=get("podVistaRosso");
+  let comp=get("podVistaCompatta");
   apply("compatta","vCompatta",comp===null?small:comp==="1");
-  apply("rosso","vTema",rosso==="1");
   $("vCompatta").onclick=()=>{const on=!document.body.classList.contains("compatta");apply("compatta","vCompatta",on);put("podVistaCompatta",on?"1":"0")};
-  $("vTema").onclick=()=>{const on=!document.body.classList.contains("rosso");apply("rosso","vTema",on);put("podVistaRosso",on?"1":"0")};
 })();
 // ---- Pagine: una o due insieme (la scelta viene ricordata su questo dispositivo) ----
 // Tocca un pulsante per aggiungere quella pagina (al massimo due: la più vecchia lascia il posto);
