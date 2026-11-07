@@ -391,8 +391,8 @@ const state={};
 const $=id=>document.getElementById(id);
 
 // ---- Lingua: italiano / inglese ----
-// Le chiavi sono i testi italiani; EN contiene la traduzione inglese.
-const EN={
+// Le chiavi sono i testi italiani; POD_EN contiene la traduzione inglese.
+const POD_EN={
 "Compatta":"Compact","Rosso":"Red","Pagine":"Pages","Effetti":"Effects","Canali":"Channels","Preset":"Presets",
 "Messaggi":"Messages","Tutto":"All",
 "Tocca due pulsanti per vedere due pagine insieme · tocca di nuovo per chiudere":"Tap two buttons to see two pages together · tap again to close",
@@ -474,25 +474,25 @@ const EN={
 "SysEx non consentito: Save e Backup non funzioneranno.":"SysEx not allowed: Save and Backup will not work.",
 "Il MIDI non è disponibile in questa installazione.":"MIDI is not available in this installation."
 };
-const LKEY="podProRemote.lang";
-const bridge=window.podApp||null;   // presente solo nell'app per Mac
-function startLang(){
+const POD_LKEY="podProRemote.lang";
+const podBridge=window.podApp||null;   // presente solo nell'app per Mac
+function podStartLang(){
   let l=null;
-  try{if(bridge)l=bridge.getLang()}catch(e){}
-  if(!l){try{l=localStorage.getItem(LKEY)}catch(e){}}
+  try{if(podBridge)l=podBridge.getLang()}catch(e){}
+  if(!l){try{l=localStorage.getItem(POD_LKEY)}catch(e){}}
   if(!l)l=String(navigator.language||"").toLowerCase().startsWith("it")?"it":"en";
   return l==="en"?"en":"it";
 }
-let LANG=startLang();
-const tr=s=>LANG==="en"&&EN[s]!=null?EN[s]:s;
-const t=(s,v)=>tr(s).replace(/\{(\w+)\}/g,(m,k)=>v&&v[k]!=null?v[k]:m);
+let podLang=podStartLang();
+const podTr=s=>podLang==="en"&&POD_EN[s]!=null?POD_EN[s]:s;
+const podT=(s,v)=>podTr(s).replace(/\{(\w+)\}/g,(m,k)=>v&&v[k]!=null?v[k]:m);
 
 function log(txt){const l=$("log");l.textContent+=txt+"\n";l.scrollTop=l.scrollHeight}
 function ch(){return Number($("ch").value)}
 function send(bytes,txt){
   const hex=bytes.map(b=>b.toString(16).padStart(2,"0").toUpperCase()).join(" ");
-  if(out){try{out.send(bytes)}catch(e){log(t("Errore invio: {m}",{m:e.message}));return}}
-  log((out?"":tr("[prova]")+" ")+txt.padEnd(30)+hex);
+  if(out){try{out.send(bytes)}catch(e){log(podT("Errore invio: {m}",{m:e.message}));return}}
+  log((out?"":podTr("[prova]")+" ")+txt.padEnd(30)+hex);
 }
 function cc(n,v,label){state[n]=v;send([0xB0|ch(),n,v],`CC ${n} = ${v} (${label})`)}
 function pc(p,label){send([0xC0|ch(),p],`PC ${p} (${label})`)}
@@ -522,10 +522,10 @@ markPreset(1);
 // ---- Interruttori con LED ----
 TOGGLES.forEach(t=>{
   const b=document.createElement("button");b.className="tg";b.setAttribute("aria-pressed","false");
-  b.innerHTML=`<span class="led"></span><span class="rb">${tr(t.name)}</span>`;
+  b.innerHTML=`<span class="led"></span><span class="rb">${podTr(t.name)}</span>`;
   t.el=b;t.lab=b.querySelector(".rb");
   t.set=on=>{b.setAttribute("aria-pressed",on);b.classList.toggle("on",on)};
-  b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";t.set(on);cc(t.cc,on?127:0,tr(t.name)+(on?" ON":" OFF"))};
+  b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";t.set(on);cc(t.cc,on?127:0,podTr(t.name)+(on?" ON":" OFF"))};
   state[t.cc]=0;$("toggles").appendChild(b);
 });
 
@@ -534,14 +534,14 @@ function makeKnob(k,parent){
   const id="k"+k.cc,w=document.createElement("div");w.className="knob";
   w.innerHTML=`<div class="knwrap"><div class="kn"></div><div class="body"><div class="cap"></div><div class="ptr"></div></div></div>
     <input type="range" class="sr" id="${id}" min="0" max="127" value="${k.v}">
-    <label for="${id}">${tr(k.name)}</label><output>${k.v}</output>`;
+    <label for="${id}">${podTr(k.name)}</label><output>${k.v}</output>`;
   k.lab=w.querySelector("label");
   const r=w.querySelector("input"),o=w.querySelector("output"),ring=w.querySelector(".kn"),ptr=w.querySelector(".ptr"),body=w.querySelector(".body");
   let t;
   k.set=(v,doSend)=>{
     v=clamp(v);r.value=v;o.textContent=v;state[k.cc]=v;
     ptr.style.setProperty("--r",(-135+v/127*270)+"deg");ring.style.setProperty("--a",(v/127*270)+"deg");
-    if(doSend){clearTimeout(t);t=setTimeout(()=>cc(k.cc,v,tr(k.name)),25)}
+    if(doSend){clearTimeout(t);t=setTimeout(()=>cc(k.cc,v,podTr(k.name)),25)}
   };
   k.set(k.v,false);
   r.oninput=()=>k.set(+r.value,true);
@@ -563,10 +563,10 @@ FX.forEach(k=>makeKnob(k,$("fxKnobs")));
 
 // ---- Modelli ----
 MODELS.forEach(m=>{
-  const l=document.createElement("label");const id="m"+m.cc;l.htmlFor=id;m.lab=document.createElement("span");m.lab.textContent=tr(m.name);l.appendChild(m.lab);
+  const l=document.createElement("label");const id="m"+m.cc;l.htmlFor=id;m.lab=document.createElement("span");m.lab.textContent=podTr(m.name);l.appendChild(m.lab);
   const s=document.createElement("select");s.id=id;
-  m.list.forEach((n,i)=>s.add(new Option(`${String(i).padStart(2,"0")} ${tr(n)}`,i)));s.value=m.v;state[m.cc]=m.v;m.el=s;
-  s.onchange=()=>cc(m.cc,+s.value,tr(m.name)+": "+tr(m.list[s.value]));l.appendChild(s);$("models").appendChild(l);
+  m.list.forEach((n,i)=>s.add(new Option(`${String(i).padStart(2,"0")} ${podTr(n)}`,i)));s.value=m.v;state[m.cc]=m.v;m.el=s;
+  s.onchange=()=>cc(m.cc,+s.value,podTr(m.name)+": "+podTr(m.list[s.value]));l.appendChild(s);$("models").appendChild(l);
 });
 
 $("tap").onclick=()=>cc(64,127,"tap tempo");
@@ -580,25 +580,25 @@ function setTuner(on){tunerOn=on;$("tuner").classList.toggle("red",on);$("tuner"
 function learnEnd(){
   const l=learn;learn=null;clearTimeout(l.t);
   if(!l.on){$("tuner").textContent="Tuner";
-    log(tr("Il POD non ha inviato nessun comando quando hai premuto Tuner. Probabilmente il POD Pro non permette di comandare l'accordatore via MIDI."));return}
+    log(podTr("Il POD non ha inviato nessun comando quando hai premuto Tuner. Probabilmente il POD Pro non permette di comandare l'accordatore via MIDI."));return}
   tunerCmd={on:l.on,off:l.off||l.on};
   try{localStorage.setItem(TKEY,JSON.stringify(tunerCmd))}catch(e){}
-  log(t("Comando del Tuner imparato. Acceso: {on} · Spento: {off}",{on:hexs(tunerCmd.on),off:hexs(tunerCmd.off)}));
-  log(tr("Ora il tasto Tuner dell'app accende e spegne l'accordatore."));setTuner(false);
+  log(podT("Comando del Tuner imparato. Acceso: {on} · Spento: {off}",{on:hexs(tunerCmd.on),off:hexs(tunerCmd.off)}));
+  log(podTr("Ora il tasto Tuner dell'app accende e spegne l'accordatore."));setTuner(false);
 }
 function learnCapture(d){
   if(!learn)return false;
   if(d[0]>=0xF8)return true;                       // ignora clock e active sensing
-  const m=Array.from(d);log(t("← dal POD: {h}",{h:hexs(m)}));
-  if(!learn.on){learn.on=m;$("tuner").textContent=tr("Ora premi di nuovo Tuner sul POD…");
+  const m=Array.from(d);log(podT("← dal POD: {h}",{h:hexs(m)}));
+  if(!learn.on){learn.on=m;$("tuner").textContent=podTr("Ora premi di nuovo Tuner sul POD…");
     clearTimeout(learn.t);learn.t=setTimeout(learnEnd,10000);return true}
   learn.off=m;learnEnd();return true;
 }
 function learnStart(){
-  if(!inp){log(tr("Per imparare il comando del Tuner serve MIDI In collegato (cavo dal MIDI OUT del POD all'interfaccia)."));return}
+  if(!inp){log(podTr("Per imparare il comando del Tuner serve MIDI In collegato (cavo dal MIDI OUT del POD all'interfaccia)."));return}
   learn={on:null,off:null,t:setTimeout(learnEnd,15000)};
-  $("tuner").textContent=tr("Premi Tuner sul POD…");
-  log(tr("— Impara Tuner — Premi il tasto Tuner sul POD per accendere l'accordatore, poi premilo di nuovo per spegnerlo."));
+  $("tuner").textContent=podTr("Premi Tuner sul POD…");
+  log(podTr("— Impara Tuner — Premi il tasto Tuner sul POD per accendere l'accordatore, poi premilo di nuovo per spegnerlo."));
 }
 // Su iPhone e iPad: tieni premuto Tuner per circa un secondo per reimparare il comando (sul Mac: Maiusc+clic)
 let tHold=null,tHeld=false;
@@ -610,19 +610,19 @@ $("tuner").onclick=e=>{
   if(learn){learnEnd();return}
   if(!tunerCmd||e.shiftKey){learnStart();return}
   setTuner(!tunerOn);const m=tunerOn?tunerCmd.on:tunerCmd.off;
-  if(out){try{out.send(m)}catch(err){log(t("Errore invio: {m}",{m:err.message}));return}}
-  log((out?"":tr("[prova]")+" ")+("Tuner "+(tunerOn?"ON":"OFF")).padEnd(30)+hexs(m));
+  if(out){try{out.send(m)}catch(err){log(podT("Errore invio: {m}",{m:err.message}));return}}
+  log((out?"":podTr("[prova]")+" ")+("Tuner "+(tunerOn?"ON":"OFF")).padEnd(30)+hexs(m));
 };
 function sendAllNow(){
-  [...MODELS,...KNOBS].forEach(k=>cc(k.cc,state[k.cc],tr(k.name)));
-  TOGGLES.forEach(x=>cc(x.cc,state[x.cc],tr(x.name)));
+  [...MODELS,...KNOBS].forEach(k=>cc(k.cc,state[k.cc],podTr(k.name)));
+  TOGGLES.forEach(x=>cc(x.cc,state[x.cc],podTr(x.name)));
 }
 $("sendAll").onclick=sendAllNow;
 
 // ---- I miei preset (salvati in Chrome) ----
 const KEY="podProRemote.presets";
 function readStore(){try{const a=JSON.parse(localStorage.getItem(KEY));return Array.isArray(a)?a:[]}catch(e){return []}}
-function writeStore(a){try{localStorage.setItem(KEY,JSON.stringify(a));return true}catch(e){log(tr("Non riesco a salvare i preset: usa Esporta su file."));return false}}
+function writeStore(a){try{localStorage.setItem(KEY,JSON.stringify(a));return true}catch(e){log(podTr("Non riesco a salvare i preset: usa Esporta su file."));return false}}
 let mine=readStore();
 
 function snapshot(){const s={};[...TOGGLES,...KNOBS,...MODELS].forEach(k=>s[k.cc]=state[k.cc]);return s}
@@ -633,20 +633,20 @@ function applySnapshot(s){
 }
 function renderList(){
   const l=$("plist");l.innerHTML="";
-  if(!mine.length){l.innerHTML='<p class="empty">'+tr("Nessun preset salvato. Regola il suono, scrivi un nome e premi Salva.")+'</p>';return}
+  if(!mine.length){l.innerHTML='<p class="empty">'+podTr("Nessun preset salvato. Regola il suono, scrivi un nome e premi Salva.")+'</p>';return}
   mine.forEach((p,i)=>{
     const it=document.createElement("div");it.className="item";
     const nm=document.createElement("span");nm.className="nm";nm.textContent=p.name;
-    const dt=document.createElement("span");dt.className="dt";dt.textContent=new Date(p.date).toLocaleDateString(LANG==="en"?"en-GB":"it-IT");
-    const ld=document.createElement("button");ld.className="rb red";ld.textContent=tr("Carica");
+    const dt=document.createElement("span");dt.className="dt";dt.textContent=new Date(p.date).toLocaleDateString(podLang==="en"?"en-GB":"it-IT");
+    const ld=document.createElement("button");ld.className="rb red";ld.textContent=podTr("Carica");
     ld.onclick=()=>{applySnapshot(p.values);log("— Preset \""+p.name+"\" —");sendAllNow()};
-    const ov=document.createElement("button");ov.className="rb";ov.textContent=tr("Sovrascrivi");
-    ov.onclick=()=>{p.values=snapshot();p.date=Date.now();writeStore(mine);renderList();log(t("Preset \"{n}\" aggiornato.",{n:p.name}))};
-    const del=document.createElement("button");del.className="rb";del.textContent=tr("Elimina");
+    const ov=document.createElement("button");ov.className="rb";ov.textContent=podTr("Sovrascrivi");
+    ov.onclick=()=>{p.values=snapshot();p.date=Date.now();writeStore(mine);renderList();log(podT("Preset \"{n}\" aggiornato.",{n:p.name}))};
+    const del=document.createElement("button");del.className="rb";del.textContent=podTr("Elimina");
     del.onclick=()=>{
       if(del.dataset.armed){mine.splice(i,1);writeStore(mine);renderList();return}
-      del.dataset.armed="1";del.textContent=tr("Conferma");
-      setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent=tr("Elimina")}},3000);
+      del.dataset.armed="1";del.textContent=podTr("Conferma");
+      setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent=podTr("Elimina")}},3000);
     };
     it.append(nm,dt,ld,ov,del);l.appendChild(it);
   });
@@ -655,21 +655,21 @@ $("psave").onclick=()=>{
   const name=$("pname").value.trim()||("Preset "+(mine.length+1));
   const ex=mine.find(p=>p.name.toLowerCase()===name.toLowerCase());
   if(ex){ex.values=snapshot();ex.date=Date.now()}else mine.push({name,date:Date.now(),values:snapshot()});
-  if(writeStore(mine))log(t("Salvato: \"{n}\"",{n:name}));
+  if(writeStore(mine))log(podT("Salvato: \"{n}\"",{n:name}));
   $("pname").value="";renderList();
 };
 $("pname").addEventListener("keydown",e=>{if(e.key==="Enter")$("psave").click()});
 $("pexport").onclick=()=>{
   const blob=new Blob([JSON.stringify(mine,null,2)],{type:"application/json"});
-  saveFile(blob,"pod-pro-preset.json");log(tr("Scegli dove salvare il file dei preset."));
+  saveFile(blob,"pod-pro-preset.json");log(podTr("Scegli dove salvare il file dei preset."));
 };
 $("pimport").onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();
   rd.onload=()=>{try{
     const a=JSON.parse(rd.result);if(!Array.isArray(a))throw 0;
     a.forEach(p=>{if(!p||!p.name||!p.values)return;const ex=mine.find(q=>q.name===p.name);ex?Object.assign(ex,p):mine.push(p)});
-    writeStore(mine);renderList();log(t("Importati {n} preset.",{n:a.length}));
-  }catch(err){log(tr("File non valido: scegli un file esportato da questa pagina."))}e.target.value=""};
+    writeStore(mine);renderList();log(podT("Importati {n} preset.",{n:a.length}));
+  }catch(err){log(podTr("File non valido: scegli un file esportato da questa pagina."))}e.target.value=""};
   rd.readAsText(f);
 };
 renderList();
@@ -680,8 +680,8 @@ const NOREPLY="Nessuna risposta dal POD. Controlla il cavo dal MIDI OUT del POD 
 let inp=null,sysexOK=false,waiter=null,pendingRestore=null;
 
 function sysReady(){
-  if(!out){log(tr("Per questa funzione serve un'uscita MIDI collegata al POD."));return false}
-  if(!sysexOK){log(tr("SysEx non disponibile: chiudi e riapri l'app."));return false}
+  if(!out){log(podTr("Per questa funzione serve un'uscita MIDI collegata al POD."));return false}
+  if(!sysexOK){log(podTr("SysEx non disponibile: chiudi e riapri l'app."));return false}
   return true;
 }
 function waitFor(op,ms){
@@ -722,7 +722,7 @@ let readTimer=null,lastRaw=null;
 function scheduleRead(){clearTimeout(readTimer);readTimer=setTimeout(()=>readFromPod(true),250)}
 async function readFromPod(auto){
   if(!out||!inp||!sysexOK){
-    if(!auto)log(tr("Per leggere dal POD servono MIDI Out e MIDI In collegati e il SysEx attivo."));
+    if(!auto)log(podTr("Per leggere dal POD servono MIDI Out e MIDI In collegati e il SysEx attivo."));
     return false;
   }
   const wait=waitFor(0x01,2500);
@@ -732,9 +732,9 @@ async function readFromPod(auto){
     if(d.length<8+142)throw 0;
     const b=decode(d,8),{s,name}=parseProgram(b);
     lastRaw=b;applySnapshot(s);$("lcdname").textContent=name||"—";
-    log(name?t("Letto dal POD: «{n}».",{n:name}):tr("Letto dal POD."));
+    log(name?podT("Letto dal POD: «{n}».",{n:name}):podTr("Letto dal POD."));
     return true;
-  }catch(err){log(auto?tr("Il POD non ha inviato i dati del preset: controlla il cavo verso MIDI In."):tr(NOREPLY));return false}
+  }catch(err){log(auto?podTr("Il POD non ha inviato i dati del preset: controlla il cavo verso MIDI In."):podTr(NOREPLY));return false}
 }
 function applyIncomingCC(n,v){
   const t=TOGGLES.find(x=>x.cc===n);if(t){state[n]=v;t.set(v>=64);return}
@@ -743,45 +743,45 @@ function applyIncomingCC(n,v){
 }
 $("readPod").onclick=async()=>{
   if(await readFromPod(false)&&lastRaw)
-    log(t("Dati grezzi: {h}",{h:hexs(lastRaw)}));
+    log(podT("Dati grezzi: {h}",{h:hexs(lastRaw)}));
 };
 
 // Save: chiede al POD il suono attuale (edit buffer) e lo riscrive nel canale scelto
 $("podsave").onclick=async()=>{
   const b=$("podsave"),slot=+$("slot").value;
-  if(!b.dataset.armed){armButton(b,t("Conferma: sovrascrivi {p}",{p:pname(slot)}),4000,"Save");return}
+  if(!b.dataset.armed){armButton(b,podT("Conferma: sovrascrivi {p}",{p:pname(slot)}),4000,"Save");return}
   delete b.dataset.armed;b.textContent="Save";
   if(!sysReady())return;
   const wait=waitFor(0x01,3000);
-  out.send([...HDR,0x00,0x01,0xF7]);log(tr("Richiesta del suono attuale al POD…"));
+  out.send([...HDR,0x00,0x01,0xF7]);log(podTr("Richiesta del suono attuale al POD…"));
   try{
     const d=await wait;
     const msg=[...HDR,0x01,0x00,slot-1,...Array.from(d.slice(7))];
     out.send(msg);
-    log(t("Salvato nel canale {p} ({n} byte). Richiamalo dal POD per verificare.",{p:pname(slot),n:msg.length}));
-  }catch(err){log(tr(NOREPLY))}
+    log(podT("Salvato nel canale {p} ({n} byte). Richiamalo dal POD per verificare.",{p:pname(slot),n:msg.length}));
+  }catch(err){log(podTr(NOREPLY))}
 };
 
 // Backup: scarica tutti i 36 canali in un file .syx
 $("backup").onclick=async()=>{
   if(!sysReady())return;
   const wait=waitFor(0x02,10000);
-  out.send([...HDR,0x00,0x02,0xF7]);log(tr("Richiesta backup dei 36 canali…"));
+  out.send([...HDR,0x00,0x02,0xF7]);log(podTr("Richiesta backup dei 36 canali…"));
   try{
     const d=await wait;
     const name="pod-pro-backup-"+new Date().toISOString().slice(0,10)+".syx";
     saveFile(new Blob([d],{type:"application/octet-stream"}),name);
-    log(t("Backup ricevuto ({n} byte): scegli dove salvare {f}.",{n:d.length,f:name}));
-  }catch(err){log(tr(NOREPLY))}
+    log(podT("Backup ricevuto ({n} byte): scegli dove salvare {f}.",{n:d.length,f:name}));
+  }catch(err){log(podTr(NOREPLY))}
 };
 
 // Ripristino: rimanda al POD un file di backup
 $("restore").onclick=()=>{
   const b=$("restore");
   if(b.dataset.armed&&pendingRestore){
-    delete b.dataset.armed;b.textContent=tr("Ripristina backup");
+    delete b.dataset.armed;b.textContent=podTr("Ripristina backup");
     if(!sysReady())return;
-    out.send(pendingRestore);log(t("Backup inviato al POD ({n} byte).",{n:pendingRestore.length}));pendingRestore=null;return;
+    out.send(pendingRestore);log(podT("Backup inviato al POD ({n} byte).",{n:pendingRestore.length}));pendingRestore=null;return;
   }
   $("restoreFile").click();
 };
@@ -790,9 +790,9 @@ $("restoreFile").onchange=e=>{
   rd.onload=()=>{
     const d=new Uint8Array(rd.result);e.target.value="";
     const ok=d.length>100&&HDR.every((v,i)=>d[i]===v)&&d[5]===1&&d[6]===2&&d[d.length-1]===0xF7;
-    if(!ok){log(tr("Questo file non è un backup del POD Pro creato da questa pagina."));return}
-    pendingRestore=d;log(t("File {f} pronto. Premi di nuovo per confermare: sovrascrive tutti i 36 canali.",{f:f.name}));
-    armButton($("restore"),tr("Conferma ripristino 36 canali"),8000,tr("Ripristina backup"));
+    if(!ok){log(podTr("Questo file non è un backup del POD Pro creato da questa pagina."));return}
+    pendingRestore=d;log(podT("File {f} pronto. Premi di nuovo per confermare: sovrascrive tutti i 36 canali.",{f:f.name}));
+    armButton($("restore"),podTr("Conferma ripristino 36 canali"),8000,podTr("Ripristina backup"));
   };
   rd.readAsArrayBuffer(f);
 };
@@ -833,15 +833,15 @@ const FACTORY=[
 ];
 function renderFactory(){$("factory").innerHTML="";FACTORY.forEach(p=>{
   const it=document.createElement("div");it.className="item";
-  const nm=document.createElement("span");nm.className="nm";nm.textContent=tr(p.name);
-  const dt=document.createElement("span");dt.className="dt";dt.style.flexBasis="100%";dt.style.order="3";dt.textContent=tr(p.info);
-  const ld=document.createElement("button");ld.className="rb red";ld.textContent=tr("Carica");
-  ld.onclick=()=>{applySnapshot(p.values);log(t("— Suono pronto \"{n}\" —",{n:tr(p.name)}));sendAllNow()};
-  const cp=document.createElement("button");cp.className="rb";cp.textContent=tr("Copia nei miei");
+  const nm=document.createElement("span");nm.className="nm";nm.textContent=podTr(p.name);
+  const dt=document.createElement("span");dt.className="dt";dt.style.flexBasis="100%";dt.style.order="3";dt.textContent=podTr(p.info);
+  const ld=document.createElement("button");ld.className="rb red";ld.textContent=podTr("Carica");
+  ld.onclick=()=>{applySnapshot(p.values);log(podT("— Suono pronto \"{n}\" —",{n:podTr(p.name)}));sendAllNow()};
+  const cp=document.createElement("button");cp.className="rb";cp.textContent=podTr("Copia nei miei");
   cp.onclick=()=>{
-    const name=tr(p.name),ex=mine.find(q=>q.name===name),values={...p.values};
+    const name=podTr(p.name),ex=mine.find(q=>q.name===name),values={...p.values};
     if(ex){ex.values=values;ex.date=Date.now()}else mine.push({name,date:Date.now(),values});
-    if(writeStore(mine))log(t("Copiato in I miei preset: \"{n}\"",{n:name}));renderList();
+    if(writeStore(mine))log(podT("Copiato in I miei preset: \"{n}\"",{n:name}));renderList();
   };
   it.append(nm,ld,cp,dt);$("factory").appendChild(it);
 });}
@@ -885,8 +885,8 @@ renderFactory();
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
 if(window.podNative){$("bt").hidden=false;$("bt").onclick=()=>window.podNative.bluetooth()}
 // ---- Web MIDI ----
-let statusKey="Avvio…";
-function setStatus(kind,key){statusKey=key;$("dot").className="led dot "+kind;$("stat").textContent=tr(key)}
+let podStatusKey="Avvio…";
+function setStatus(kind,key){podStatusKey=key;$("dot").className="led dot "+kind;$("stat").textContent=podTr(key)}
 function fillPorts(){
   [["out",midi.outputs],["in",midi.inputs]].forEach(([id,ports])=>{
     const sel=$(id),prev=sel.value;sel.length=1;
@@ -906,42 +906,42 @@ function pickIn(){
   if(inp)inp.onmidimessage=onMsg;
 }
 $("out").onchange=pickOut;$("in").onchange=pickIn;
-function startMidi(m){midi=m;m.onstatechange=fillPorts;fillPorts();log(tr(sysexOK?"MIDI pronto (SysEx attivo).":"MIDI pronto."))}
-function midiFail(){setStatus("demo","MIDI non disponibile");log(tr("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI."))}
+function startMidi(m){midi=m;m.onstatechange=fillPorts;fillPorts();log(podTr(sysexOK?"MIDI pronto (SysEx attivo).":"MIDI pronto."))}
+function midiFail(){setStatus("demo","MIDI non disponibile");log(podTr("Il MIDI non è disponibile. Chiudi e riapri l'app; se non basta, ricollega l'interfaccia MIDI."))}
 // Alcuni browser per iPhone/iPad (es. Web MIDI Browser) aggiungono il MIDI alla pagina
 // qualche istante dopo l'apertura: si aspetta fino a 10 secondi prima di arrendersi.
 function initMidi(){
   navigator.requestMIDIAccess({sysex:true}).then(m=>{sysexOK=true;startMidi(m)})
-  .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log(tr("SysEx non consentito: Save e Backup non funzioneranno."))}).catch(midiFail));
+  .catch(()=>navigator.requestMIDIAccess().then(m=>{sysexOK=false;startMidi(m);log(podTr("SysEx non consentito: Save e Backup non funzioneranno."))}).catch(midiFail));
 }
 (function waitMidi(tries){
   if(navigator.requestMIDIAccess)return initMidi();
   if(tries===0)setStatus("demo","Attendo il MIDI…");
   if(tries<50)return setTimeout(()=>waitMidi(tries+1),200);
   setStatus("demo","MIDI non disponibile");
-  log(tr("Il MIDI non è disponibile: su iPhone e iPad apri questa pagina con l'app Web MIDI Browser (Safari non supporta il MIDI)."));
+  log(podTr("Il MIDI non è disponibile: su iPhone e iPad apri questa pagina con l'app Web MIDI Browser (Safari non supporta il MIDI)."));
 })(0);
 // ---- Applica la lingua a tutto il pannello (scelta ricordata su questo dispositivo) ----
-function applyLang(l,save){
-  LANG=l==="en"?"en":"it";
-  document.documentElement.lang=LANG;$("lang").value=LANG;
+function podApplyLang(l,save){
+  podLang=l==="en"?"en":"it";
+  document.documentElement.lang=podLang;$("lang").value=podLang;
   const sw=(el,key,set)=>{if(el.dataset[key]==null)el.dataset[key]=set();return el.dataset[key]};
-  document.querySelectorAll("[data-t]").forEach(el=>{el.textContent=tr(sw(el,"it",()=>el.textContent))});
-  document.querySelectorAll("[data-tp]").forEach(el=>{el.placeholder=tr(sw(el,"itp",()=>el.placeholder))});
-  document.querySelectorAll("[data-ta]").forEach(el=>{el.setAttribute("aria-label",tr(sw(el,"ita",()=>el.getAttribute("aria-label"))))});
-  document.querySelectorAll("[data-tt]").forEach(el=>{el.title=tr(sw(el,"itt",()=>el.title))});
-  TOGGLES.forEach(x=>x.lab.textContent=tr(x.name));
-  KNOBS.forEach(k=>k.lab.textContent=tr(k.name));
-  MODELS.forEach(m=>{m.lab.textContent=tr(m.name);[...m.el.options].forEach((o,i)=>o.text=`${String(i).padStart(2,"0")} ${tr(m.list[i])}`)});
+  document.querySelectorAll("[data-t]").forEach(el=>{el.textContent=podTr(sw(el,"it",()=>el.textContent))});
+  document.querySelectorAll("[data-tp]").forEach(el=>{el.placeholder=podTr(sw(el,"itp",()=>el.placeholder))});
+  document.querySelectorAll("[data-ta]").forEach(el=>{el.setAttribute("aria-label",podTr(sw(el,"ita",()=>el.getAttribute("aria-label"))))});
+  document.querySelectorAll("[data-tt]").forEach(el=>{el.title=podTr(sw(el,"itt",()=>el.title))});
+  TOGGLES.forEach(x=>x.lab.textContent=podTr(x.name));
+  KNOBS.forEach(k=>k.lab.textContent=podTr(k.name));
+  MODELS.forEach(m=>{m.lab.textContent=podTr(m.name);[...m.el.options].forEach((o,i)=>o.text=`${String(i).padStart(2,"0")} ${podTr(m.list[i])}`)});
   ["podsave","restore"].forEach(id=>delete $(id).dataset.armed);
   $("podsave").textContent="Save";
   if(!learn)setTuner(tunerOn);
-  $("stat").textContent=tr(statusKey);
+  $("stat").textContent=podTr(podStatusKey);
   renderList();renderFactory();
-  if(save){try{localStorage.setItem(LKEY,LANG)}catch(e){}}
+  if(save){try{localStorage.setItem(POD_LKEY,podLang)}catch(e){}}
 }
-$("lang").onchange=()=>applyLang($("lang").value,true);
-applyLang(LANG,false);
+$("lang").onchange=()=>podApplyLang($("lang").value,true);
+podApplyLang(podLang,false);
 </script>
 </body>
 </html>
