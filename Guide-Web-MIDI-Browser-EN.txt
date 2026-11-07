@@ -1,0 +1,41 @@
+POD Pro Remote on iPhone and iPad with Web MIDI Browser (free, no paid Apple account)
+
+The panel is published as a web page:
+   https://maarnone52-oss.github.io/pod-pro-remote-ios/
+
+INSTALLATION
+1. Install "Web MIDI Browser" (free) from the App Store on your iPhone and/or iPad.
+2. Connect the MIDI interface to the POD and to the device:
+   iPhone with USB-C: USB MIDI interface straight into the port
+   iPad Pro Lightning: Apple "Lightning to USB 3 Camera Adapter"
+   Bluetooth: first pair the adapter with the free app "midimittr"
+3. Open Web MIDI Browser, type the address above and add it to your bookmarks.
+4. At the top of the panel choose "MIDI Out", "MIDI In" and the POD's channel.
+
+LANGUAGE
+The panel is in English and Italian and follows the device's language.
+To change it use the IT / EN selector at the top, next to Compact and Red.
+The choice is remembered on that device.
+
+NOTES
+- Saved presets stay in the browser on that device: use "Export to file"
+  from time to time to keep a copy.
+
+TUNER
+The Tuner button, next to Manual, turns the POD's tuner on and off.
+The first time, the panel must learn the command from the POD (you need the
+cable from the POD's MIDI OUT to the interface's MIDI IN):
+1. Tap Tuner in the panel: it changes to "Press Tuner on the POD…".
+2. Press Tuner on the POD to turn it on, then press it again to turn it off.
+3. From then on the panel's Tuner button controls the tuner.
+To learn the command again: press and hold Tuner for about one second.
+The learned command is saved on that device (iPhone and iPad each learn it
+on their own).
+
+READY-MADE SOUNDS
+On the Presets page you will find "Comfortably Numb – Solo" and a softer
+variant. Load sends the sound to the POD; Copy to mine adds it to your
+presets, so you can edit and overwrite it.
+
+Line 6 and POD are trademarks of Line 6, Inc. This app is not made or endorsed
+by Line 6. Model names are used only to indicate compatibility.

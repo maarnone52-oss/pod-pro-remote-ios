@@ -12,6 +12,12 @@ INSTALLAZIONE
 3. Apri Web MIDI Browser, scrivi l'indirizzo qui sopra e aggiungilo ai preferiti.
 4. In alto nel pannello scegli "MIDI Out", "MIDI In" e il canale del POD.
 
+LINGUA
+Il pannello è in italiano e in inglese e segue la lingua del dispositivo.
+Per cambiarla usa il selettore IT / EN in alto, accanto a Compatta e Rosso.
+La scelta resta memorizzata su quel dispositivo.
+(English guide: Guide-Web-MIDI-Browser-EN.txt)
+
 NOTE
 - I preset salvati restano nel browser di quel dispositivo: usa "Esporta su file"
   ogni tanto per averne una copia.
