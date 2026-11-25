@@ -6,9 +6,10 @@ options:
   createIntermediateGroups: true
 settings:
   base:
-    MARKETING_VERSION: "1.1.0"
+    MARKETING_VERSION: "1.3.1"
     CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.0"
+    APP_DISPLAY_NAME: "POD Pro Remote"
 targets:
   PODProRemote:
     type: application
@@ -23,7 +24,7 @@ targets:
     info:
       path: PODProRemote/Info.plist
       properties:
-        CFBundleDisplayName: POD Pro Remote
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSRequiresIPhoneOS: true
@@ -47,7 +48,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: PODProRemote
-        PRODUCT_BUNDLE_IDENTIFIER: it.podproremote.app
+        PRODUCT_BUNDLE_IDENTIFIER: it.arnone.podproremote
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic

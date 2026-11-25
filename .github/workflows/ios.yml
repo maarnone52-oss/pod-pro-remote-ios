@@ -1,12 +1,21 @@
 # Compila l'app su un Mac di GitHub.
 # - "Verifica": controlla che l'app si compili (non serve nessun account Apple).
-# - "TestFlight": la firma e la carica su TestFlight, solo se sono stati inseriti i segreti Apple.
+# - "TestFlight": la firma e la carica su TestFlight, se sono stati inseriti i segreti Apple.
+#   Ogni modifica caricata su GitHub produce la versione PROVA ("POD Pro PROVA").
+#   La versione definitiva ("POD Pro Remote") parte solo a mano:
+#   Actions > App iOS > Run workflow > versione: definitiva.
 name: App iOS
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      versione:
+        description: "Quale app caricare su TestFlight"
+        type: choice
+        options: [prova, definitiva]
+        default: prova
 
 jobs:
   verifica:
@@ -41,8 +50,10 @@ jobs:
     needs: verifica
     runs-on: macos-15
     env:
+      VERSIONE: ${{ github.event.inputs.versione || 'prova' }}
       TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      BUNDLE_ID: ${{ secrets.APP_BUNDLE_ID }}
+      BUNDLE_ID: ${{ github.event.inputs.versione == 'definitiva' && secrets.APP_BUNDLE_ID || secrets.APP_BUNDLE_ID_PROVA }}
+      APP_NAME: ${{ github.event.inputs.versione == 'definitiva' && 'POD Pro Remote' || 'POD Pro PROVA' }}
       KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       KEY_P8: ${{ secrets.ASC_KEY_P8 }}
@@ -50,11 +61,12 @@ jobs:
       - name: Controlla i segreti Apple
         id: check
         run: |
+          echo "Versione: $VERSIONE ($APP_NAME)"
           if [ -n "$TEAM_ID" ] && [ -n "$BUNDLE_ID" ] && [ -n "$KEY_ID" ] && [ -n "$ISSUER_ID" ] && [ -n "$KEY_P8" ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Segreti Apple non inseriti: salto l'invio a TestFlight."
+            echo "::notice::Segreti Apple per la versione $VERSIONE non inseriti: salto l'invio a TestFlight."
           fi
 
       - uses: actions/checkout@v4
@@ -79,6 +91,7 @@ jobs:
             -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_$KEY_ID.p8" \
             -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            APP_DISPLAY_NAME="$APP_NAME" \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
             archive | tail -n 60
 

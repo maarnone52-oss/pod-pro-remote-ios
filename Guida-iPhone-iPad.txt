@@ -26,38 +26,46 @@ PASSO 1 — GitHub
 4. Scrivi a Claude il nome del repository: Claude carica il progetto e
    controlla che la compilazione riesca, correggendo eventuali errori.
 
-PASSO 2 — Apple (dopo l'iscrizione al Developer Program)
-1. Su appstoreconnect.apple.com > App > "+" > Nuova app:
-   - Piattaforma: iOS
-   - Nome: un nome a tua scelta (deve essere unico sull'App Store,
-     per esempio "POD Remote di <tuo cognome>")
-   - Identificativo pacchetto (Bundle ID): creane uno nuovo, per esempio
-     it.<tuocognome>.podproremote
-   L'app non verrà pubblicata: serve solo per TestFlight.
-2. Su appstoreconnect.apple.com > Utenti e accessi > Integrazioni >
-   Chiavi API di App Store Connect: genera una chiave con ruolo "Admin".
-   Annota "Issuer ID" e "ID chiave" e scarica il file .p8
-   (si scarica una sola volta: conservalo).
-3. Il Team ID si trova su developer.apple.com > Account > Membership.
+PASSO 2 — Apple: due app, PROVA e definitiva
+1. Su developer.apple.com > Certificates, IDs & Profiles > Identifiers > "+"
+   registra due ID pacchetto (App IDs, tipo App):
+     it.arnone.podproremote.prova   (descrizione: POD Pro PROVA)
+     it.arnone.podproremote         (descrizione: POD Pro Remote)
+2. Su appstoreconnect.apple.com > App > "+" > Nuova app, due volte:
+     Nome "POD Pro PROVA"  con l'ID it.arnone.podproremote.prova
+     Nome "POD Pro Remote" con l'ID it.arnone.podproremote
+   Piattaforma iOS, lingua principale Italiano, SKU a piacere
+   (per esempio podpro-prova e podpro). Il nome sull'App Store deve essere
+   unico: se "POD Pro Remote" è già preso, scegline un altro.
+3. Chiave API: puoi usare la stessa chiave di App Store Connect creata per
+   ArnoShow (ruolo Admin): servono "ID chiave", "Issuer ID" e il file .p8.
+4. Team ID: developer.apple.com > Account > Membership.
 
 PASSO 3 — Inserisci i dati in GitHub (non scriverli nella chat)
-Nel repository: Settings > Secrets and variables > Actions > New repository secret.
-Crea questi cinque segreti:
-   APPLE_TEAM_ID   il Team ID
-   APP_BUNDLE_ID   il Bundle ID scelto al passo 2.1
-   ASC_KEY_ID      l'ID chiave
-   ASC_ISSUER_ID   l'Issuer ID
-   ASC_KEY_P8      tutto il contenuto del file .p8 (aprilo con TextEdit e copia)
+Nel repository pod-pro-remote-ios:
+Settings > Secrets and variables > Actions > New repository secret.
+Crea questi sei segreti:
+   APPLE_TEAM_ID         il Team ID
+   APP_BUNDLE_ID_PROVA   it.arnone.podproremote.prova
+   APP_BUNDLE_ID         it.arnone.podproremote
+   ASC_KEY_ID            l'ID chiave
+   ASC_ISSUER_ID         l'Issuer ID
+   ASC_KEY_P8            tutto il contenuto del file .p8 (aprilo con TextEdit e copia)
 
-PASSO 4 — Compila e installa
-1. Nel repository: Actions > "App iOS" > Run workflow.
-   Dopo circa 10–15 minuti la versione viene caricata su TestFlight.
-2. Su App Store Connect > la tua app > TestFlight: aggiungi te stesso
-   tra i tester interni (la prima volta Apple può impiegare qualche ora
-   per elaborare la versione).
-3. Sull'iPhone o sull'iPad apri TestFlight e installa "POD Pro Remote".
+PASSO 4 — Versione PROVA su TestFlight
+1. Ogni modifica caricata su GitHub crea da sola una nuova "POD Pro PROVA".
+   Per crearla subito: Actions > "App iOS" > Run workflow > versione: prova.
+   Dopo circa 10–15 minuti arriva su App Store Connect.
+2. App Store Connect > POD Pro PROVA > TestFlight: aggiungi te stesso tra i
+   tester interni (la prima volta Apple può impiegare qualche ora).
+3. Sull'iPhone o sull'iPad apri TestFlight e installa "POD Pro PROVA".
 
-Le versioni TestFlight durano 90 giorni: per rinnovarla basta rilanciare
+PASSO 5 — Versione definitiva
+Quando la PROVA va bene: Actions > "App iOS" > Run workflow >
+versione: definitiva. Arriva "POD Pro Remote" su TestFlight; da lì si può
+inviare ad Apple per la pubblicazione sull'App Store.
+
+Le versioni TestFlight durano 90 giorni: per rinnovarle basta rilanciare
 "Run workflow".
 
 USO
