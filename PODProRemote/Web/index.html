@@ -270,6 +270,16 @@ body.compatta .ptr::before{top:5px;width:2px;height:10px;margin-left:-1px}
 .bpmrow .rb.pm{min-width:42px;font-size:18px;padding:7px 10px}
 body.compatta .bpmrow .lcd span{font-size:24px}
 body.compatta .bpmrow .rb.pm{min-width:34px;font-size:15px;padding:5px 8px}
+
+/* ---- Finestra principale ferma in alto; le pagine scorrono solo nello spazio sotto ---- */
+html,body{height:100%}
+body,body.compatta{padding-block:0;overflow:hidden;display:flex;flex-direction:column}
+.wrap,body.compatta .wrap{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;gap:0;
+  padding-top:max(12px,env(safe-area-inset-top,0px))}
+.unit.head{position:relative;top:auto;flex:none}
+.scroller{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  display:grid;gap:14px;align-content:start;padding-top:14px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+body.compatta .scroller{gap:8px;padding-top:8px}
 </style>
 </head>
 <body class="rosso">
@@ -394,6 +404,11 @@ body.compatta .bpmrow .rb.pm{min-width:34px;font-size:15px;padding:5px 8px}
 </div>
 
 <script>
+// Le pagine (amplificatore, effetti, canali...) scorrono in un'area sotto la finestra principale,
+// così non le passano mai sotto.
+(function(){const w=document.querySelector(".wrap"),h=w&&w.querySelector(".unit.head");if(!h)return;
+  const sc=document.createElement("div");sc.className="scroller";
+  while(h.nextSibling)sc.appendChild(h.nextSibling);w.appendChild(sc)})();
 // Eventuali errori compaiono nella pagina Messaggi
 window.addEventListener("error",e=>{try{const l=document.getElementById("log");l.textContent+="⚠ "+e.message+" (riga "+e.lineno+")\n"}catch(x){}});
 // ---- Mappa MIDI POD Pro / POD 2.0 (Line 6 MIDI CC Reference) ----
@@ -961,7 +976,7 @@ renderFactory();
     else{sel.push(n);if(sel.length>2)sel.shift()}
     show();
   }
-  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tap(b.dataset.go);window.scrollTo({top:0})});
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tap(b.dataset.go);const sc=document.querySelector(".scroller");if(sc)sc.scrollTop=0;else window.scrollTo({top:0})});
   show();
 })();
 // Pulsante per gli adattatori MIDI Bluetooth (solo nell'app iOS)
