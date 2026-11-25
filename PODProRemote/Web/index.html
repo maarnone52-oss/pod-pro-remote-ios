@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>POD Pro Remote</title>
+<title>ARNOGUITAR</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="apple-touch-icon.png">
 <style>
@@ -280,7 +280,7 @@ body.compatta .bpmrow .rb.pm{min-width:34px;font-size:15px;padding:5px 8px}
     <div class="ear"><span class="screw"></span><span class="screw"></span></div>
     <div class="face">
       <div class="top">
-        <div class="brand">POD Pro <b>Remote</b><small>MIDI Control Unit · CH 1–16</small></div>
+        <div class="brand">ARNO<b>GUITAR</b><small>MIDI control for Line 6 POD Pro</small></div>
         <div class="lcdbox">
           <button class="rb" id="prev" data-ta aria-label="Preset precedente">◀</button>
           <div class="lcd" aria-live="polite"><span id="lcd">1A</span><small id="lcdname">—</small></div>
@@ -745,7 +745,7 @@ $("psave").onclick=()=>{
 $("pname").addEventListener("keydown",e=>{if(e.key==="Enter")$("psave").click()});
 $("pexport").onclick=()=>{
   const blob=new Blob([JSON.stringify(mine,null,2)],{type:"application/json"});
-  saveFile(blob,"pod-pro-preset.json");log(podTr("Scegli dove salvare il file dei preset."));
+  saveFile(blob,"arnoguitar-preset.json");log(podTr("Scegli dove salvare il file dei preset."));
 };
 $("pimport").onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();
@@ -853,7 +853,7 @@ $("backup").onclick=async()=>{
   out.send([...HDR,0x00,0x02,0xF7]);log(podTr("Richiesta backup dei 36 canali…"));
   try{
     const d=await wait;
-    const name="pod-pro-backup-"+new Date().toISOString().slice(0,10)+".syx";
+    const name="arnoguitar-backup-"+new Date().toISOString().slice(0,10)+".syx";
     saveFile(new Blob([d],{type:"application/octet-stream"}),name);
     log(podT("Backup ricevuto ({n} byte): scegli dove salvare {f}.",{n:d.length,f:name}));
   }catch(err){log(podTr(NOREPLY))}

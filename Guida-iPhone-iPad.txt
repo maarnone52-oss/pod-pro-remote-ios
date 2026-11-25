@@ -1,4 +1,4 @@
-POD Pro Remote per iPhone e iPad — guida all'installazione
+ARNOGUITAR per iPhone e iPad — guida all'installazione
 
 L'app per iPhone e iPad va compilata e firmata con un account Apple prima di
 poterla installare: è una regola di Apple. Il tuo Mac (Catalina) non ha un
@@ -29,14 +29,14 @@ PASSO 1 — GitHub
 PASSO 2 — Apple: due app, PROVA e definitiva
 1. Su developer.apple.com > Certificates, IDs & Profiles > Identifiers > "+"
    registra due ID pacchetto (App IDs, tipo App):
-     it.arnone.podproremote.prova   (descrizione: POD Pro PROVA)
-     it.arnone.podproremote         (descrizione: POD Pro Remote)
+     it.arnone.podproremote.prova   (descrizione: ARNOGUITAR PROVA)
+     it.arnone.podproremote         (descrizione: ARNOGUITAR)
 2. Su appstoreconnect.apple.com > App > "+" > Nuova app, due volte:
-     Nome "POD Pro PROVA"  con l'ID it.arnone.podproremote.prova
-     Nome "POD Pro Remote" con l'ID it.arnone.podproremote
+     Nome "ARNOGUITAR PROVA"  con l'ID it.arnone.podproremote.prova
+     Nome "ARNOGUITAR" con l'ID it.arnone.podproremote
    Piattaforma iOS, lingua principale Italiano, SKU a piacere
    (per esempio podpro-prova e podpro). Il nome sull'App Store deve essere
-   unico: se "POD Pro Remote" è già preso, scegline un altro.
+   unico: se "ARNOGUITAR" è già preso, scegline un altro.
 3. Chiave API: puoi usare la stessa chiave di App Store Connect creata per
    ArnoShow (ruolo Admin): servono "ID chiave", "Issuer ID" e il file .p8.
 4. Team ID: developer.apple.com > Account > Membership.
@@ -53,16 +53,16 @@ Crea questi sei segreti:
    ASC_KEY_P8            tutto il contenuto del file .p8 (aprilo con TextEdit e copia)
 
 PASSO 4 — Versione PROVA su TestFlight
-1. Ogni modifica caricata su GitHub crea da sola una nuova "POD Pro PROVA".
+1. Ogni modifica caricata su GitHub crea da sola una nuova "ARNOGUITAR PROVA".
    Per crearla subito: Actions > "App iOS" > Run workflow > versione: prova.
    Dopo circa 10–15 minuti arriva su App Store Connect.
-2. App Store Connect > POD Pro PROVA > TestFlight: aggiungi te stesso tra i
+2. App Store Connect > ARNOGUITAR PROVA > TestFlight: aggiungi te stesso tra i
    tester interni (la prima volta Apple può impiegare qualche ora).
-3. Sull'iPhone o sull'iPad apri TestFlight e installa "POD Pro PROVA".
+3. Sull'iPhone o sull'iPad apri TestFlight e installa "ARNOGUITAR PROVA".
 
 PASSO 5 — Versione definitiva
 Quando la PROVA va bene: Actions > "App iOS" > Run workflow >
-versione: definitiva. Arriva "POD Pro Remote" su TestFlight; da lì si può
+versione: definitiva. Arriva "ARNOGUITAR" su TestFlight; da lì si può
 inviare ad Apple per la pubblicazione sull'App Store.
 
 Le versioni TestFlight durano 90 giorni: per rinnovarle basta rilanciare

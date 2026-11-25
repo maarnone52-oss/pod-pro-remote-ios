@@ -1,8 +1,8 @@
 # Compila l'app su un Mac di GitHub.
 # - "Verifica": controlla che l'app si compili (non serve nessun account Apple).
 # - "TestFlight": la firma e la carica su TestFlight, se sono stati inseriti i segreti Apple.
-#   Ogni modifica caricata su GitHub produce la versione PROVA ("POD Pro PROVA").
-#   La versione definitiva ("POD Pro Remote") parte solo a mano:
+#   Ogni modifica caricata su GitHub produce la versione PROVA ("ARNOGUITAR PROVA").
+#   La versione definitiva ("ARNOGUITAR") parte solo a mano:
 #   Actions > App iOS > Run workflow > versione: definitiva.
 name: App iOS
 
@@ -61,7 +61,7 @@ jobs:
       VERSIONE: ${{ github.event.inputs.versione || 'prova' }}
       TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       BUNDLE_ID: ${{ github.event.inputs.versione == 'definitiva' && secrets.APP_BUNDLE_ID || secrets.APP_BUNDLE_ID_PROVA }}
-      APP_NAME: ${{ github.event.inputs.versione == 'definitiva' && 'POD Pro Remote' || 'POD Pro PROVA' }}
+      APP_NAME: ${{ github.event.inputs.versione == 'definitiva' && 'ARNOGUITAR' || 'ARNOGUITAR PROVA' }}
       KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       KEY_P8: ${{ secrets.ASC_KEY_P8 }}

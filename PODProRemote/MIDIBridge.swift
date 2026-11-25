@@ -19,7 +19,7 @@ final class MIDIBridge {
         if started { refresh(); return }
         started = true
 
-        MIDIClientCreateWithBlock("POD Pro Remote" as CFString, &client) { [weak self] _ in
+        MIDIClientCreateWithBlock("ARNOGUITAR" as CFString, &client) { [weak self] _ in
             DispatchQueue.main.async { self?.refresh() }
         }
         MIDIOutputPortCreate(client, "Uscita" as CFString, &outPort)
